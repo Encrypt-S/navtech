@@ -74,7 +74,7 @@ git clone https://github.com/navcoindev/navtech.git
 - On the incoming server open the config folder and copy the incoming settings example to what will be your local settings file and open it
 ``` sh
 cd navtech/config
-cp example-incoming.deault.json default.json
+cp example-incoming.default.json default.json
 vi default.json
 ```
 - This file determines all the settings necessary to operate your incoming NAVTech Server. You will need to configure this to your own settings.
@@ -218,7 +218,7 @@ Setting up the outgoing server is much the same process as the incoming server b
 - On the outgoing server open the config folder and copy the outgoing settings example to what will be your local settings file and open it
 ``` sh
 cd navtech/config
-cp example-outgoing.deault.json default.json
+cp example-outgoing.default.json default.json
 vi default.json
 ```
 - This file determines all the settings necessary to operate your outgoing NAVTech Server. You will need to configure this to your own settings.

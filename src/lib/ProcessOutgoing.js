@@ -70,7 +70,9 @@ ProcessOutgoing.mockSend = () => {
 
 ProcessOutgoing.createNavTransactions = () => {
   if (ProcessOutgoing.runtime.partialTransactions.length < 1) {
-    Logger.writeLog('PROO_003', 'all partial nav sent', { transaction: ProcessOutgoing.runtime.remainingTransactions[0] })
+    Logger.writeLog('PROO_003', 'all partial nav sent', {
+      transaction: ProcessOutgoing.runtime.remainingTransactions[0].transaction,
+    })
     ProcessOutgoing.runtime.successfulTransactions.push({
       transaction: ProcessOutgoing.runtime.remainingTransactions[0].transaction,
     })
