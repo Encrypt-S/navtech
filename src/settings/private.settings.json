@@ -1,0 +1,40 @@
+{
+  "keyFolders": {
+    "private": {
+      "path": "./keys/private/",
+      "suffix": "_private.pem"
+    },
+    "public": {
+      "path": "./keys/public/",
+      "suffix": "_public.pub"
+    }
+  },
+  "keyPeriod": 604800000,
+  "minKeyStamp": 1464739200000,
+  "account": {
+    "INCOMING": "incomingAccount",
+    "OUTGOING": "outgoingAccount",
+    "HOLDING": "holdingAccount"
+  },
+  "maxAddresses": 250,
+  "maxHolding": 100,
+  "minNavTransactions": 3,
+  "maxNavTransactions": 8,
+  "txFee": 0.001,
+  "maxEncryptionAttempts": 10,
+  "encryptionStrength": {
+    "INCOMING": 2048,
+    "OUTGOING": 1024
+  },
+  "encryptionOutput": {
+    "INCOMING": 344,
+    "OUTGOING": 172
+  },
+  "subCoinsPerTx": 10,
+  "subChainTxFee": 0.001,
+  "minConfs": 1,
+  "blockThreshold": {
+    "checking": 5,
+    "processing": 1
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "GLOBAL": {
+    "serverType": "INCOMING",
+    "encryptedWallet": false,
+    "maintenance": true,
+    "allowedIps": [
+      "192.168.1.1"
+    ]
+  },
+  "INCOMING": {
+    "local": {
+      "ipAddress": "192.168.1.1",
+      "port": 3000
+    },
+    "remote": [{
+      "ipAddress": "192.168.1.3",
+      "port": 3000
+    },
+    {
+      "ipAddress": "192.168.1.4",
+      "port": 3000
+    }],
+    "scriptInterval": 120000,
+    "minAmount": 10,
+    "maxAmount": 10000,
+    "anonFeePercent": 0.5,
+    "notificationEmail": "youremail@gmail.com",
+    "smtp": {
+      "user": "yoursmtp@gmail.com",
+      "pass": "SMTP_EMAIL_PASSWORD",
+      "server": "smtp.gmail.com"
+    },
+    "navCoin": {
+      "user": "RPC_USERNAME",
+      "pass": "RPC_PASSWORD",
+      "ip": "127.0.0.1",
+      "port": "44444",
+      "walletPassphrase": "NAVCOIN_WALLET_PASSPHRASE"
+    },
+    "subChain": {
+      "user": "RPC_USERNAME",
+      "pass": "RPC_PASSWORD",
+      "ip": "127.0.0.1",
+      "port": "33333",
+      "walletPassphrase": "SUBCHAIN_WALLET_PASSPHRASE"
+    },
+    "secretOptions": {
+      "salt": "32_RANDOM_CHARACTERS",
+      "saltRounds": 10
+    },
+    "secret": "SECRET_GENERATED_BY_INCOMING_SETUP"
+  },
+  "OUTGOING": false
+}

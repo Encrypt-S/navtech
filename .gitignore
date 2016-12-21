@@ -1,0 +1,7 @@
+coverage/*
+node_modules/*
+keys/private/*
+keys/public/*
+log.txt
+npm-debug.log
+config/default.json

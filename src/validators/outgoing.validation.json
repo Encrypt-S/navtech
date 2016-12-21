@@ -1,0 +1,128 @@
+{
+  "local": {
+    "host": {
+      "required": false,
+      "type": "DOMAIN"
+    },
+    "ipAddress": {
+      "required": true,
+      "type": "IP_ADDRESS"
+    },
+    "port": {
+      "required": true,
+      "type": "PORT"
+    }
+  },
+  "remote": {
+    "host": {
+      "required": false,
+      "type": "DOMAIN"
+    },
+    "ipAddress": {
+      "required": true,
+      "type": "IP_ADDRESS"
+    },
+    "port": {
+      "required": true,
+      "type": "PORT"
+    }
+  },
+  "scriptInterval": {
+    "required": true,
+    "type": "INT",
+    "min": 120000
+  },
+  "minAmount": {
+    "required": true,
+    "type": "INT",
+    "min": 10
+  },
+  "maxAmount": {
+    "required": true,
+    "type": "INT",
+    "min": 10
+  },
+  "navPoolAmount": {
+    "required": true,
+    "type": "INT",
+    "min": 50000
+  },
+  "txFeePayoutMin": {
+    "required": true,
+    "type": "INT",
+    "min": 1
+  },
+  "anonTxFeeAddress": {
+    "required": true,
+    "type": "NAV_ADDRESS"
+  },
+  "notificationEmail": {
+    "required": true,
+    "type": "EMAIL"
+  },
+  "smtp": {
+    "user": {
+      "required": true,
+      "type": "EMAIL"
+    },
+    "pass": {
+      "required": true,
+      "type": "STRING"
+    },
+    "server": {
+      "required": true,
+      "type": "DOMAIN"
+    }
+  },
+  "navCoin": {
+    "user": {
+      "required": true,
+      "type": "STRING"
+    },
+    "pass": {
+      "required": true,
+      "type": "STRING"
+    },
+    "ip": {
+      "required": true,
+      "type": "IP_ADDRESS"
+    },
+    "port": {
+      "required": true,
+      "type": "VALUE",
+      "value": "44444"
+    },
+    "walletPassphrase": {
+      "required": true,
+      "type": "STRING"
+    }
+  },
+  "subChain": {
+    "user": {
+      "required": true,
+      "type": "STRING"
+    },
+    "pass": {
+      "required": true,
+      "type": "STRING"
+    },
+    "ip": {
+      "required": true,
+      "type": "IP_ADDRESS"
+    },
+    "port": {
+      "required": true,
+      "type": "VALUE",
+      "value": "33333"
+    },
+    "walletPassphrase": {
+      "required": true,
+      "type": "STRING"
+    }
+  },
+  "secret": {
+    "required": true,
+    "type": "STRING",
+    "length": 42
+  }
+}

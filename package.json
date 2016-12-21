@@ -1,0 +1,67 @@
+{
+  "name": "crypto-anonymizer",
+  "version": "1.0.0",
+  "description": "Node Application to Anonymize Crypto Currencies via a Subchain",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run mocha",
+    "build": "webpack",
+    "start": "NODE_ENV=production babel-node src/app.js",
+    "setup": "node src/setup.js",
+    "loader": "node src/loader.js",
+    "mocha": "./node_modules/.bin/mocha",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craigmacgregor/crypto-anonymizer.git"
+  },
+  "author": "Craig MacGregor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/craigmacgregor/crypto-anonymizer/issues"
+  },
+  "homepage": "https://github.com/craigmacgregor/crypto-anonymizer#readme",
+  "dependencies": {
+    "babel": "^6.5.2",
+    "babel-runtime": "^6.18.0",
+    "bcrypt": "^0.8.7",
+    "bitcoin-core": "^1.0.0",
+    "body-parser": "^1.15.2",
+    "config": "^1.24.0",
+    "express": "^4.14.0",
+    "md5-file": "^3.1.1",
+    "nodemailer": "^2.6.4",
+    "pem": "^1.8.3",
+    "request": "^2.74.0",
+    "token-generator": "^1.0.0",
+    "ursa": "^0.9.4",
+    "validator": "^5.7.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-eslint": "^6.0.4",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-es2015": "^6.18.0",
+    "chai": "^3.5.0",
+    "eslint": "^2.8.0",
+    "eslint-config-airbnb": "^8.0.0",
+    "eslint-plugin-import": "^1.6.1",
+    "eslint-plugin-jsx-a11y": "^1.0.4",
+    "eslint-plugin-react": "^5.0.1",
+    "expect": "^1.20.2",
+    "html-loader": "^0.4.4",
+    "istanbul": "^0.4.5",
+    "json-loader": "^0.5.4",
+    "markdown-loader": "^0.1.7",
+    "mocha": "^3.0.2",
+    "q": "^1.4.1",
+    "rewire": "^2.5.2",
+    "shrinkwrap": "^0.4.0",
+    "sinon": "^1.17.5",
+    "webpack": "^1.13.3",
+    "webpack-node-externals": "^1.5.4"
+  }
+}
