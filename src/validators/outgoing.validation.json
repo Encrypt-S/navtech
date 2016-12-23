@@ -93,7 +93,9 @@
       "value": "44444"
     },
     "walletPassphrase": {
-      "required": true,
+      "required": {
+        "conditional": "GLOBAL.encryptedWallet"
+      },
       "type": "STRING"
     }
   },
@@ -116,7 +118,9 @@
       "value": "33333"
     },
     "walletPassphrase": {
-      "required": true,
+      "required": {
+        "conditional": "GLOBAL.encryptedWallet"
+      },
       "type": "STRING"
     }
   },

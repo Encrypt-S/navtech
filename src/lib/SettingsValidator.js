@@ -65,6 +65,20 @@ function eachField(value, ignoreList, validation, currentKey) {
   if (validation.required === false && (!value || value === undefined)) {
     return
   }
+
+  if (typeof validation.required === 'object' && validation.required.conditional) {
+    const conditional = validation.required.conditional.split('.')
+    if (conditional[0] === 'GLOBAL') {
+      const conditionMet = globalSettings[conditional[1]]
+      if (!conditionMet) return
+    }
+  }
+
+  if (!value || value === undefined) {
+    SettingsValidator.errors.push('MISSING_VALUE for ' + currentKey + ', must provide a valid value')
+    return
+  }
+
   if (ignoreList && ignoreList.indexOf(currentKey) !== -1) {
     return
   }
