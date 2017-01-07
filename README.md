@@ -2,6 +2,16 @@
 
 # NAVTECH
 
+## Client Settings
+
+| Specification | Value |
+|:-----------|:-----------|
+| addanonserver | `95.183.52.55:3000` |
+| addanonserver | `95.183.53.184:3000` |
+| addanonserver | `95.183.52.28:3000` |
+| addanonserver | `95.183.52.29:3000` |
+| anonhash | `000c17f28eaa71f48de6d8856fc3a22f` |
+
 ## RECOMMENDED SPECIFICATIONS
 
 - To start up a NAVTech cluster, you will need a minimum of 2 servers with the following specifications each with their own IP Adddress and have the correct ports open for the API.
