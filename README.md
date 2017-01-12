@@ -255,6 +255,7 @@ Here are the detailed explaination of what the settings control and their defaul
 | `OUTGOING.minAmount` |  `int` | true | 10 | minimum transaction size the server will accept |
 | `OUTGOING.maxAmount` |  `int` | true | 10000 | maximum transaction size the server will accept |
 | `OUTGOING.navPoolAmount` |  `int` | true | 50000 | the size of the NAV pool, all funds exceeding this value get sent to the NAVTech fee address |
+| `OUTGOING.txFeePayoutMin` |  `int` | true | 100 | the minimum fee amount to accrue before sending a payout to the anonTxFeeAddress |
 | `OUTGOING.anonTxFeeAddress` |  `string` | true | `none` | NAV address used to collect the server processing fee. |
 | `OUTGOING.notificationEmail` |  `string` | true | `none` | email address error notifications will be sent to |
 | `OUTGOING.smtp`       | `object`      | true    | `none` | contains the settings to send notification emails via smtp |

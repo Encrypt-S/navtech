@@ -20,6 +20,7 @@
     "minAmount": 10,
     "maxAmount": 10000,
     "navPoolAmount": 50000,
+    "txFeePayoutMin": 100,
     "anonTxFeeAddress": "NAVCOIN_TX_FEE_ADDRESS",
     "notificationEmail": "youremail@gmail.com",
     "smtp": {
