@@ -13,7 +13,7 @@ PrepareIncoming.run = (options, callback) => {
   const required = ['navClient', 'outgoingNavBalance', 'subBalance']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('PREPI_001', 'invalid options', { options, required })
-    callback(false, { message: 'invalid options provided to ReturnAllToSenders.run' })
+    callback(false, { message: 'invalid options provided to PrepareIncoming.run' })
     return
   }
   PrepareIncoming.runtime = {
@@ -62,11 +62,13 @@ PrepareIncoming.unspentFiltered = (success, data) => {
 }
 
 PrepareIncoming.pruneUnspent = (options, callback) => {
-  if (!options.currentPending ||
-      !parseFloat(options.subBalance) ||
-      !parseFloat(options.maxAmount)) {
-    Logger.writeLog('NAV_006', 'pruneIncomingUnspent invalid params', { options })
-    callback(false, { error: 'invalid params' })
+  const required = ['currentPending', 'subBalance', 'maxAmount']
+  if (lodash.intersection(Object.keys(options), required).length !== required.length) {
+    Logger.writeLog('PREPI_004', 'invalid options', { options, required })
+    callback(false, {
+      message: 'invalid options provided to PrepareIncoming.pruneUnspent',
+      currentPending: PrepareIncoming.runtime.currentPending,
+    })
     return
   }
   const currentBatch = []
@@ -85,14 +87,20 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
   if (hasPruned) {
     callback(true, { currentBatch, sumPending })
   } else {
-    callback(false, { error: 'no pruned' })
+    callback(false, {
+      message: 'no tranasctions left after pruning',
+      currentPending: PrepareIncoming.runtime.currentPending,
+    })
   }
 }
 
 PrepareIncoming.unspentPruned = (success, data) => {
   if (!success || !data || !data.currentBatch || data.currentBatch.length < 1) {
-    Logger.writeLog('PREPI_003', 'failed to prune unspent', { success, data })
-    PrepareIncoming.runtime.callback(false, { message: 'failed to prune unspent' })
+    Logger.writeLog('PREPI_005', 'failed to prune unspent', { success, data })
+    PrepareIncoming.runtime.callback(false, {
+      message: 'failed to prune unspent',
+      currentPending: PrepareIncoming.runtime.currentPending,
+    })
     return
   }
 

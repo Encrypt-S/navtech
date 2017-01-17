@@ -115,7 +115,6 @@ IncomingServer.outgoingSelected = (success, data) => {
 }
 
 IncomingServer.allPendingReturned = (success, data) => {
-  console.log('STATUS: IncomingServer.allPendingReturned', success, data)
   if (!success) {
     Logger.writeLog('INC_006', 'failed to return all pending to sender', { success, data }, true)
     IncomingServer.processing = false
@@ -129,6 +128,12 @@ IncomingServer.allPendingReturned = (success, data) => {
 IncomingServer.currentBatchPrepared = (success, data) => {
   if (!success || !data || !data.currentBatch) {
     IncomingServer.processing = false
+    return
+  }
+  if (!success && data.currentBatch) {
+    ReturnAllToSenders.run({
+      navClient: IncomingServer.navClient,
+    }, IncomingServer.allPendingReturned)
     return
   }
   IncomingServer.runtime.currentBatch = data.currentBatch
