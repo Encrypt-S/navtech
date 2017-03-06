@@ -184,6 +184,11 @@ IncomingServer.failedTransactionsReturned = (success, data) => {
   if (!success) {
     Logger.writeLog('INC_012', 'failed to return failed transactions to sender', { success, data }, true)
   }
+  if (IncomingServer.runtime.successfulSubTransactions.length === 0) {
+    Logger.writeLog('INC_012a', 'no successful transactions to spend to holding', { success, data }, true)
+    IncomingServer.paused = false
+    IncomingServer.processing = false
+  }
   SpendToHolding.run({
     successfulSubTransactions: IncomingServer.runtime.successfulSubTransactions,
     holdingEncrypted: IncomingServer.runtime.holdingEncrypted,
