@@ -26,7 +26,7 @@ ReturnAllToSenders.run = (options, callback) => {
 
 ReturnAllToSenders.fromList = (options, callback) => {
   const required = ['navClient', 'transactionsToReturn']
-  if (lodash.intersection(Object.keys(options), required).length() !== required.length()) {
+  if (lodash.intersection(Object.keys(options), required).length !== required.length {
     Logger.writeLog('RATS_001A', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ReturnAllToSenders.fromList' })
   }
