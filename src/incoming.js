@@ -182,8 +182,12 @@ IncomingServer.transactionsProcessed = (success, data) => {
 
 IncomingServer.failedTransactionsReturned = (success, data) => {
   if (!success) {
-    Logger.writeLog('INC_012', 'failed to return failed transactions to sender', { success, data }, true)
+    Logger.writeLog('INC_TEST', 'debug', {
+      successful: IncomingServer.runtime.successfulSubTransactions,
+      length: IncomingServer.runtime.successfulSubTransactions.length,
+    }, true)
   }
+  Logger.writeLog('INC_012a', 'no successful transactions to spend to holding', { success, data }, true)
   if (IncomingServer.runtime.successfulSubTransactions.length === 0) {
     Logger.writeLog('INC_012a', 'no successful transactions to spend to holding', { success, data }, true)
     IncomingServer.paused = false
