@@ -75,7 +75,7 @@ ReturnAllToSenders.returnToSender = () => {
     return
   }
   ReturnToSender.send({
-    client: ReturnToSender.runtime.navClient,
+    client: ReturnAllToSenders.runtime.navClient,
     transaction: ReturnAllToSenders.runtime.transactionsToReturn[0] },
   ReturnAllToSenders.returnedToSender)
 }
