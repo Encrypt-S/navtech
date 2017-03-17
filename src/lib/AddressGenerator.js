@@ -1,23 +1,28 @@
 'use strict'
 
+const lodash = require('lodash')
+let Logger = require('./Logger.js') // eslint-disable-line
+
 const AddressGenerator = {}
 
 AddressGenerator.generate = (options, callback) => {
-  if (!options.accountName || !options.client || !options.maxAddresses) {
-    console.log('STATUS: AddressGenerator.generate invalid params')
-    callback(false)
+  const required = ['accountName', 'client', 'maxAddresses']
+  if (lodash.intersection(Object.keys(options), required).length !== required.length) {
+    Logger.writeLog('ADG_001', 'invalid options', { options, required })
+    callback(false, { message: 'invalid options provided to AddressGenerator.generate' })
     return
   }
+
   options.client.getAccountAddress(options.accountName).then(() => {
     console.log('STATUS: "' + options.accountName + '" account created')
     AddressGenerator.getAccountAddressesForGeneration(options, callback)
   })
   .catch((err) => {
     if (err.code === -12) {
-      AddressGenerator.runKeypoolRefill()
+      AddressGenerator.runKeypoolRefill(options, callback)
     } else {
-      console.log('ERROR: client.getAccountAddress failed', err)
-      callback(false)
+      Logger.writeLog('ADG_002', 'client.getAccountAddress failed', { err })
+      callback(false, err)
       return
     }
   })
@@ -27,9 +32,9 @@ AddressGenerator.runKeypoolRefill = (options, callback) => {
   options.client.keypoolRefill().then(() => {
     console.log('STATUS: keypool filled')
     AddressGenerator.generate(options, callback)
-  }).catch((err2) => {
-    console.log('ERROR: client.keypoolRefill failed', err2)
-    callback(false)
+  }).catch((err) => {
+    Logger.writeLog('ADG_003', 'client.keypoolRefill failed', { err })
+    callback(false, err)
     return
   })
 }

@@ -35,6 +35,6 @@
   "minConfs": 1,
   "blockThreshold": {
     "checking": 5,
-    "processing": 1
+    "processing": 3
   }
 }
