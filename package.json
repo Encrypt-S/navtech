@@ -52,6 +52,7 @@
     "eslint-plugin-jsx-a11y": "^1.0.4",
     "eslint-plugin-react": "^5.0.1",
     "expect": "^1.20.2",
+    "fs": "0.0.1-security",
     "html-loader": "^0.4.4",
     "istanbul": "^0.4.5",
     "json-loader": "^0.5.4",

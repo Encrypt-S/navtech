@@ -7,15 +7,6 @@ const config = require('config')
 let NavCoin = rewire('../src/lib/NavCoin')
 const incomingSettings = config.get('INCOMING')
 
-const fsMock = {
-  readdir: (path, encoding, cb) => {
-    expect(path).to.equal('/somewhere/on/the/disk')
-    cb(null, 'Success!')
-  },
-}
-
-NavCoin.__set__('fs', fsMock)
-
 describe('[NavCoin]', () => {
   describe('(unlockWallet)', () => {
     it('should fail on params', (done) => {
