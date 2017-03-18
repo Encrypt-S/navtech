@@ -1,8 +1,8 @@
 const lodash = require('lodash')
 
 const privateSettings = require('../settings/private.settings.json')
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
+let Logger = require('./Logger.js') // eslint-disable-line
+let NavCoin = require('./NavCoin.js') // eslint-disable-line
 
 const PreFlight = {}
 
