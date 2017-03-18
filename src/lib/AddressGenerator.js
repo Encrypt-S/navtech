@@ -60,8 +60,8 @@ AddressGenerator.getAccountAddressesForGeneration = (options, callback) => {
     if (err.code === -12) {
       AddressGenerator.runKeypoolRefill(options, callback)
     } else {
-      console.log('ERROR: client.getAddressesByAccount', err)
-      callback(false)
+      Logger.writeLog('ADG_004', 'client.getAddressesByAccount', { err })
+      callback(false, err)
       return
     }
   })
@@ -84,8 +84,8 @@ AddressGenerator.generateNewAccountAddresses = (options, callback) => {
       if (err.code === -12) {
         AddressGenerator.runKeypoolRefill(options, callback)
       } else {
-        console.log('ERROR: client.getNewAddress', err)
-        callback(false)
+        Logger.writeLog('ADG_005', 'client.getNewAddress', { err })
+        callback(false, err)
         return
       }
     })
