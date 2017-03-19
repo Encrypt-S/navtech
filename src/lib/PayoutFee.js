@@ -1,6 +1,6 @@
 const lodash = require('lodash')
 
-const Logger = require('./Logger.js')
+let Logger = require('./Logger.js') // eslint-disable-line
 const SendToAddress = require('./SendToAddress.js')
 const privateSettings = require('../settings/private.settings.json')
 

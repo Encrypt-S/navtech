@@ -36,11 +36,11 @@ describe('[PayoutFee]', () => {
       const callback = (success, data) => {
         expect(success).toBe(false)
         expect(data.message).toBeA('string')
-        // sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledOnce(mockLogger.writeLog)
         done()
       }
       const mockClient = {
-        getBalance: () => { return Promise.resolve({ navBalance: 2 }) },
+        getBalance: () => { return Promise.resolve(2) },
       }
       const mockSettings = {
         navPoolAmount: 10
@@ -50,10 +50,10 @@ describe('[PayoutFee]', () => {
         settings: mockSettings,
         navClient: mockClient,
       }
-      // const mockLogger = {
-      //   writeLog: sinon.spy(),
-      // }
-      // PayoutFee.__set__('Logger', mockLogger)
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PayoutFee.__set__('Logger', mockLogger)
       PayoutFee.send()
   })
   it('should call the callback when payoutfee.sent is false',(done) =>{
@@ -70,4 +70,3 @@ describe('[PayoutFee]', () => {
   })
 
 })
-
