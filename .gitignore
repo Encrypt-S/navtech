@@ -5,3 +5,4 @@ keys/public/*
 log.txt
 npm-debug.log
 config/default.json
+.idea/
