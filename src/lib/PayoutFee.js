@@ -1,7 +1,7 @@
 const lodash = require('lodash')
 
 let Logger = require('./Logger.js') // eslint-disable-line
-const SendToAddress = require('./SendToAddress.js')
+let SendToAddress = require('./SendToAddress.js') // eslint-disable-line
 const privateSettings = require('../settings/private.settings.json')
 
 const PayoutFee = {}
@@ -42,7 +42,6 @@ PayoutFee.send = () => {
       address: PayoutFee.runtime.settings.anonTxFeeAddress,
       amount: txFeeAccrued,
     }, PayoutFee.sent)
-    return
   })
 }
 
