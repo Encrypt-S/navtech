@@ -3,9 +3,9 @@ const config = require('config')
 
 const globalSettings = config.get('GLOBAL')
 
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
-const EncryptedData = require('./EncryptedData.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let NavCoin = require('./NavCoin.js') //eslint-disable-line
+let EncryptedData = require('./EncryptedData.js') //eslint-disable-line
 const privateSettings = require('../settings/private.settings.json')
 
 const PrepareOutgoing = {}
@@ -120,13 +120,14 @@ PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
       return
     }
     // max possible nav to send reached
+    // @TODO possibly continue to loop through the rest of the transactions to see if any smaller ones can jump ahead
     PrepareOutgoing.runtime.callback(true, {
       failedSubTransactions: PrepareOutgoing.runtime.failedSubTransactions,
       currentBatch: PrepareOutgoing.runtime.currentBatch,
     })
     return
   }).catch((err) => {
-    Logger.writeLog('OUT_013', 'navClient failed validate address', { decrypted, transaction, error: err })
+    Logger.writeLog('PREPO_009', 'navClient failed validate address', { decrypted, transaction, error: err })
     PrepareOutgoing.failedTransaction()
   })
 }
