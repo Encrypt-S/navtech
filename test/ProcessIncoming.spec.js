@@ -14,6 +14,10 @@ beforeEach(() => {
     ProcessIncoming = rewire('../src/lib/ProcessIncoming')
 })
 
+const mockLogger = {
+    writeLog: sinon.spy(),
+}
+
 describe('[ProcessIncoming]', () => {
     describe('(run)', () => {
         it('should fail on params', (done) => {
@@ -23,9 +27,7 @@ describe('[ProcessIncoming]', () => {
                 sinon.assert.calledOnce(mockLogger.writeLog)
                 done()
             }
-            const mockLogger = {
-                writeLog: sinon.spy(),
-            }
+
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.run({junkParam: 1234}, callback)
         })
@@ -35,9 +37,6 @@ describe('[ProcessIncoming]', () => {
                 expect(data.successfulSubTransactions.length).toBe(0)
                 expect(data.transactionsToReturn.length).toBe(0)
                 done()
-            }
-            const mockLogger = {
-                writeLog: sinon.spy(),
             }
             const mockOptions = {
                 currentBatch: [],
@@ -54,10 +53,6 @@ describe('[ProcessIncoming]', () => {
     describe('(transActionFailed)', () => {
         it('should transfer policy from remainingTransactions to TransactionsToReturn when failed', (done) => {
             const callback = (success, data) => {
-                // expect(success).toBe(true)
-                // expect(ProcessIncoming.runtime.remainingTransactions.length).toBe(0)
-                // expect(ProcessIncoming.runtime.transactionsToReturn.length).toBe(1)
-                // done()
             }
             const mockRuntime = {
                 callback,
@@ -71,17 +66,24 @@ describe('[ProcessIncoming]', () => {
                 successfulSubTransactions: [],
                 remainingTransactions: [],
             }
-            ProcessIncoming.__set__('EncryptedData',mockEncryptedData)
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.runtime = mockRuntime
-            // ProcessIncoming.run(mockOptions,callback)
             ProcessIncoming.transactionFailed()
             expect(ProcessIncoming.runtime.remainingTransactions.length).toBe(0)
             expect(ProcessIncoming.runtime.transactionsToReturn.length).toBe(1)
             done()
         })
-
-
+    })
+    describe('(checkDecrypted)', () => {
+        it('should log out when success is false', (done) => {
+            const mockTransactionFailed = () => {
+                sinon.assert.calledTwice(mockLogger.writeLog)
+                done()
+            }
+            ProcessIncoming.transactionFailed = mockTransactionFailed
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.checkDecrypted(false, {transaction:true,data:true})
+        })
     })
 })
 
