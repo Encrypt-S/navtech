@@ -1,8 +1,8 @@
 const lodash = require('lodash')
 
-const Logger = require('./Logger.js')
-const RandomizeTransactions = require('./RandomizeTransactions.js')
-const SendToAddress = require('./SendToAddress.js')
+let Logger = require('./Logger.js') // eslint-disable-line
+let RandomizeTransactions = require('./RandomizeTransactions.js') // eslint-disable-line
+let SendToAddress = require('./SendToAddress.js') // eslint-disable-line
 
 const ProcessOutgoing = {}
 
@@ -91,10 +91,7 @@ ProcessOutgoing.createNavTransactions = () => {
 
 ProcessOutgoing.sentPartialNav = (success, data) => {
   if (!success || !data || !data.sendOutcome) {
-    Logger.writeLog('PROO_004', 'failed nav send to address', {
-      transaction: data.transaction,
-      error: data.error,
-    }, true)
+    Logger.writeLog('PROO_004', 'failed nav send to address', data, true)
     ProcessOutgoing.runtime.callback(false, {
       message: 'failed sending partial transaction to address',
       failedTransaction: ProcessOutgoing.runtime.remainingTransactions[0],
