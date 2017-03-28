@@ -3,10 +3,6 @@
 const expect = require('expect')
 const rewire = require('rewire')
 const sinon = require('sinon')
-const config = require('config')
-
-const globalSettings = config.get('GLOBAL')
-const privateSettings = require('../src/settings/private.settings.json')
 
 let ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
 
