@@ -75,7 +75,7 @@ describe('[ProcessIncoming]', () => {
         })
     })
     describe('(checkDecrypted)', () => {
-        it('should log out when success is false', (done) => {
+        it('should log a message out when success is false', (done) => {
             const mockTransactionFailed = () => {
                 sinon.assert.calledTwice(mockLogger.writeLog)
                 done()
@@ -84,6 +84,38 @@ describe('[ProcessIncoming]', () => {
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.checkDecrypted(false, {transaction:true,data:true})
         })
+
+
+        it('should log a message out when validateAddress is false', (done) => {
+            const callback = (success, data) => {
+            }
+            const mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.resolve({isValid: false})
+                    },
+                    test: true
+                },
+                outgoingPubKey: '123443',
+                subAddresses: [],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: [],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.checkDecrypted(true, {transaction:true,decrypted:true})
+            sinon.assert.calledTwice(mockLogger.writeLog)
+            done()
+        })
+
     })
+
+
+
 })
 
