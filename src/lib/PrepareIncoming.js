@@ -65,7 +65,7 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
   if (!options.currentPending ||
       !parseFloat(options.subBalance) ||
       !parseFloat(options.maxAmount)) {
-    Logger.writeLog('NAV_006', 'pruneIncomingUnspent invalid params', { options })
+    Logger.writeLog('PREPI_004', 'pruneUnspent invalid params', { options })
     callback(false, { message: 'invalid params' })
     return
   }
@@ -91,7 +91,7 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
 
 PrepareIncoming.unspentPruned = (success, data) => {
   if (!success || !data || !data.currentBatch || data.currentBatch.length < 1) {
-    Logger.writeLog('PREPI_003', 'failed to prune unspent', { success, data })
+    Logger.writeLog('PREPI_005', 'failed to prune unspent', { success, data })
     PrepareIncoming.runtime.callback(false, { message: 'failed to prune unspent' })
     return
   }
