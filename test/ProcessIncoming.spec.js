@@ -113,6 +113,37 @@ describe('[ProcessIncoming]', () => {
             done()
         })
 
+        it('should log a message out when validateAddress is false', (done) => {
+            const callback = (success, data) => {
+            }
+            const mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.reject({message:'mock failure'})
+                    },
+                    test: true
+                },
+                outgoingPubKey: '123443',
+                subAddresses: [],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: [],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.checkDecrypted(true, {transaction:true,decrypted:true})
+            sinon.assert.calledThrice(mockLogger.writeLog)
+            done()
+        })
+
+    })
+
+    describe('(reEncryptAddress)', ()=> {
+
     })
 
 
