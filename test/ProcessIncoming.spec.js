@@ -10,13 +10,29 @@ const privateSettings = require('../src/settings/private.settings.json')
 
 let ProcessIncoming = rewire('../src/lib/ProcessIncoming')
 
-beforeEach(() => {
-    ProcessIncoming = rewire('../src/lib/ProcessIncoming')
-})
-
-const mockLogger = {
+let mockLogger = {
     writeLog: sinon.spy(),
 }
+
+let mockRuntime = {
+    currentBatch: [],
+    settings: {setting: true},
+    subClient: {test: true},
+    navClient: {test: true},
+    outgoingPubKey: '123443',
+    subAddresses: [],
+    transactionsToReturn: [],
+    successfulSubTransactions: [],
+    remainingTransactions: [],
+}
+
+beforeEach(() => {
+    ProcessIncoming = rewire('../src/lib/ProcessIncoming')
+    mockLogger = {
+        writeLog: sinon.spy()
+    }
+    mockRuntime = {}
+})
 
 describe('[ProcessIncoming]', () => {
     describe('(run)', () => {
@@ -54,7 +70,7 @@ describe('[ProcessIncoming]', () => {
         it('should transfer policy from remainingTransactions to TransactionsToReturn when failed', (done) => {
             const callback = (success, data) => {
             }
-            const mockRuntime = {
+            mockRuntime = {
                 callback,
                 currentBatch: [],
                 settings: {setting: true},
@@ -77,26 +93,25 @@ describe('[ProcessIncoming]', () => {
     describe('(checkDecrypted)', () => {
         it('should log a message out when success is false', (done) => {
             const mockTransactionFailed = () => {
-                sinon.assert.calledTwice(mockLogger.writeLog)
+                sinon.assert.calledOnce(mockLogger.writeLog)
                 done()
             }
             ProcessIncoming.transactionFailed = mockTransactionFailed
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.checkDecrypted(false, {transaction:true,data:true})
         })
-
-
-        it('should log a message out when validateAddress is false', (done) => {
+        it('should log a message out when isValid is false', (done) => {
             const callback = (success, data) => {
             }
-            const mockRuntime = {
+            const addressInfo = {isvalid:false}
+            mockRuntime = {
                 callback,
                 currentBatch: [],
                 settings: {setting: true},
                 subClient: {test: true},
                 navClient: {
                     validateAddress: () => {
-                        return Promise.resolve({isValid: false})
+                        return Promise.resolve(addressInfo)
                     },
                     test: true
                 },
@@ -107,16 +122,17 @@ describe('[ProcessIncoming]', () => {
                 remainingTransactions: [],
             }
             ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.transactionFailed = () => {
+                sinon.assert.calledOnce(mockLogger.writeLog)
+                done()
+            }
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.checkDecrypted(true, {transaction:true,decrypted:true})
-            sinon.assert.calledTwice(mockLogger.writeLog)
-            done()
         })
-
-        it('should log a message out when validateAddress is false', (done) => {
+        it('should log a message out when validateAddress call comes back false', (done) => {
             const callback = (success, data) => {
             }
-            const mockRuntime = {
+            mockRuntime = {
                 callback,
                 currentBatch: [],
                 settings: {setting: true},
@@ -134,16 +150,28 @@ describe('[ProcessIncoming]', () => {
                 remainingTransactions: [],
             }
             ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.transactionFailed = () => {
+                sinon.assert.calledOnce(mockLogger.writeLog)
+                done()
+            }
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.checkDecrypted(true, {transaction:true,decrypted:true})
-            sinon.assert.calledThrice(mockLogger.writeLog)
-            done()
         })
 
     })
-
     describe('(reEncryptAddress)', ()=> {
 
+    })
+    describe('(sentSubToOutgoing)', ()=> {
+        it('should log a message out when success is false', (done) => {
+            const mockTransactionFailed = () => {
+                sinon.assert.calledOnce(mockLogger.writeLog)
+                done()
+            }
+            ProcessIncoming.transactionFailed = mockTransactionFailed
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.sentSubToOutgoing(false, {transaction:true,data:true})
+        })
     })
 
 
