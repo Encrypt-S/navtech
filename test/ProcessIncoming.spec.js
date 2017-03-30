@@ -160,7 +160,90 @@ describe('[ProcessIncoming]', () => {
 
     })
     describe('(reEncryptAddress)', ()=> {
-
+        it('should log a message when the encryption fails', (done) => {
+            const callback = (success, data) => {
+            }
+            mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.reject({message:'mock failure'})
+                    },
+                    test: true
+                },
+                outgoingPubKey: {
+                    encrypt: () => {return '12345'}
+                },
+                subAddresses: [],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: [],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.reEncryptAddress(true, {transaction:true,decrypted:true}, 0)
+            sinon.assert.calledOnce(mockLogger.writeLog)
+            done()
+        })
+        it('should log a message when the counter exceeds the limit', (done) => {
+            const callback = (success, data) => {
+            }
+            mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.reject({message:'mock failure'})
+                    },
+                    test: true
+                },
+                outgoingPubKey: {
+                    encrypt: () => {return '00000000'}
+                },
+                subAddresses: [],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: [],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.reEncryptAddress(true, {transaction:true,decrypted:true}, 11)
+            sinon.assert.calledOnce(mockLogger.writeLog)
+            done()
+        })
+        it('should log a message when the counter exceeds the limit', (done) => {
+            const callback = (success, data) => {
+            }
+            mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.reject({message:'mock failure'})
+                    },
+                    test: true
+                },
+                outgoingPubKey: {
+                    encrypt: () => {return '00000000'}
+                },
+                subAddresses: [],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: [],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.reEncryptAddress(true, {transaction:true,decrypted:true}, 11)
+            sinon.assert.calledOnce(mockLogger.writeLog)
+            done()
+        })
     })
     describe('(sentSubToOutgoing)', ()=> {
         it('should log a message out when success is false', (done) => {
@@ -171,6 +254,85 @@ describe('[ProcessIncoming]', () => {
             ProcessIncoming.transactionFailed = mockTransactionFailed
             ProcessIncoming.__set__('Logger', mockLogger)
             ProcessIncoming.sentSubToOutgoing(false, {transaction:true,data:true})
+        })
+        it('should log a message out when no data is false', (done) => {
+            const mockTransactionFailed = () => {
+                sinon.assert.calledOnce(mockLogger.writeLog)
+                done()
+            }
+            ProcessIncoming.transactionFailed = mockTransactionFailed
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.sentSubToOutgoing(true, {sendOutcome:false,data:true})
+        })
+        it('should remove data from subAddresses and remainingTransactions and add to successfulSubTransactions', (done) => {
+            const mockTransactionFailed = () => {
+                sinon.assert.calledOnce(mockLogger.writeLog)
+                done()
+            }
+            ProcessIncoming.transactionFailed = mockTransactionFailed
+            ProcessIncoming.__set__('Logger', mockLogger)
+            const callback = (success, data) => {
+            }
+            mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.reject({message:'mock failure'})
+                    },
+                    test: true
+                },
+                outgoingPubKey: {
+                    encrypt: () => {return '00000000'}
+                },
+                subAddresses: ['1234'],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: ['1234'],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            ProcessIncoming.sentSubToOutgoing(true, {sendOutcome:true,transaction:'1234'})
+            expect(mockRuntime.subAddresses.length).toBe(0)
+            expect(mockRuntime.remainingTransactions.length).toBe(0)
+            expect(mockRuntime.successfulSubTransactions.length).toBe(1)
+            done()
+
+        })
+    })
+    describe('makeSubchainTx', (done)=> {
+        it('should call sendToAddress', (done) => {
+            const callback = (success, data) => {
+            }
+            mockRuntime = {
+                callback,
+                currentBatch: [],
+                settings: {setting: true},
+                subClient: {test: true},
+                navClient: {
+                    validateAddress: () => {
+                        return Promise.reject({message:'mock failure'})
+                    },
+                    test: true
+                },
+                outgoingPubKey: {
+                    encrypt: () => {return '00000000'}
+                },
+                subAddresses: ['1234'],
+                transactionsToReturn: [],
+                successfulSubTransactions: [],
+                remainingTransactions: ['1234'],
+            }
+            ProcessIncoming.runtime = mockRuntime
+            const mockSendToAddress = {
+                send: sinon.spy()
+            }
+            ProcessIncoming.__set__('SendToAddress',mockSendToAddress)
+            ProcessIncoming.__set__('Logger', mockLogger)
+            ProcessIncoming.makeSubchainTx('test','test')
+            sinon.assert.calledOnce(mockSendToAddress.send)
+            done()
         })
     })
 
