@@ -1,7 +1,7 @@
 const lodash = require('lodash')
 
-const Logger = require('./Logger.js')
-const ReturnToSender = require('./ReturnToSender.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let ReturnToSender = require('./ReturnToSender.js') //eslint-disable-line
 
 const ReturnSubnav = {}
 
@@ -24,7 +24,7 @@ ReturnSubnav.run = (options, callback) => {
 }
 
 ReturnSubnav.sendToIncoming = () => {
-  if (ReturnSubnav.runtime.transactions.length < 1) {
+  if (ReturnSubnav.runtime.remainingTransactions.constructor !== Array || ReturnSubnav.runtime.remainingTransactions.length < 1) {
     ReturnSubnav.runtime.callback(true, { message: 'all subnav returned to incoming server' })
     return
   }
