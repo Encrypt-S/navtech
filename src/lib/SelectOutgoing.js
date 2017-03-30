@@ -73,7 +73,7 @@ SelectOutgoing.testOutgoing = (chosenOutgoing) => {
 }
 
 SelectOutgoing.checkOutgoingCanTransact = (body, outgoingAddress) => {
-  const bodyJson = JSON.parse(body)
+  const bodyJson = JSON.parse(body) // @TODO try catch around this
   if (bodyJson.type !== 'SUCCESS') {
     Logger.writeLog('SEL_005', 'outgoing server returned failure', { body: bodyJson, outgoingAddress })
     SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
