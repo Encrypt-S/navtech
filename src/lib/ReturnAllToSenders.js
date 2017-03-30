@@ -2,10 +2,10 @@ const lodash = require('lodash')
 const config = require('config')
 const globalSettings = config.get('GLOBAL')
 
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let NavCoin = require('./NavCoin.js') //eslint-disable-line
 const privateSettings = require('../settings/private.settings.json')
-const ReturnToSender = require('./ReturnToSender.js')
+let ReturnToSender = require('./ReturnToSender.js')//eslint-disable-line
 
 const ReturnAllToSenders = {}
 
@@ -26,7 +26,7 @@ ReturnAllToSenders.run = (options, callback) => {
 
 ReturnAllToSenders.fromList = (options, callback) => {
   const required = ['navClient', 'transactionsToReturn']
-  if (lodash.intersection(Object.keys(options), required).length() !== required.length()) {
+  if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('RATS_001A', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ReturnAllToSenders.fromList' })
   }
@@ -70,12 +70,12 @@ ReturnAllToSenders.unspentFiltered = (success, data) => {
 }
 
 ReturnAllToSenders.returnToSender = () => {
-  if (ReturnAllToSenders.runtime.transactionsToReturn.length < 1) {
+  if (ReturnAllToSenders.runtime.transactionsToReturn.constructor !== Array || ReturnAllToSenders.runtime.transactionsToReturn.length < 1) {
     ReturnAllToSenders.runtime.callback(true, { message: 'all transactions returned to sender' })
     return
   }
   ReturnToSender.send({
-    client: ReturnToSender.runtime.navClient,
+    client: ReturnAllToSenders.runtime.navClient,
     transaction: ReturnAllToSenders.runtime.transactionsToReturn[0] },
   ReturnAllToSenders.returnedToSender)
 }
