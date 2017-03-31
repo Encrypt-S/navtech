@@ -1,20 +1,25 @@
 'use strict'
 
-const Logger = require('./Logger.js')
-const privateSettings = require('../settings/private.settings.json')
-const SendRawTransaction = require('../lib/SendRawTransaction.js')
+const lodash = require('lodash')
+
+let Logger = require('./Logger.js') //eslint-disable-line
+let privateSettings = require('../settings/private.settings.json') //eslint-disable-line
+let SendRawTransaction = require('../lib/SendRawTransaction.js') //eslint-disable-line
 
 const ReturnToSender = {
   runtime: {},
 }
 
 ReturnToSender.send = (options, callback) => {
-  if (!options.transaction || !options.client) {
-    Logger.writeLog('RTS_001', 'invalid params', { options })
-    callback(false)
+  const required = ['client', 'transaction']
+  if (lodash.intersection(Object.keys(options), required).length !== required.length) {
+    Logger.writeLog('RTS_001', 'invalid options', { options, required })
+    callback(false, { message: 'invalid options provided to ReturnAllToSenders.run' })
     return
   }
+
   ReturnToSender.runtime = {}
+
   options.client.getRawTransaction(options.transaction.txid).then((incomingRaw) => {
     ReturnToSender.decodeOriginRaw({
       transaction: options.transaction,
@@ -27,7 +32,7 @@ ReturnToSender.send = (options, callback) => {
       transaction: options.transaction,
       error: err,
     })
-    callback(false)
+    callback(false, { message: 'unable to get raw transaction' })
   })
 }
 
@@ -45,7 +50,7 @@ ReturnToSender.decodeOriginRaw = (options, callback) => {
       incomingRaw: options.incomingRaw,
       error: err,
     })
-    callback(false)
+    callback(false, { message: 'unable to decode raw transaction' })
   })
 }
 
@@ -59,12 +64,12 @@ ReturnToSender.getOriginRaw = (options, callback) => {
     }, callback)
     return
   }).catch((err) => {
-    Logger.writeLog('RTS_004', 'unable to get raw incoming transaction', {
+    Logger.writeLog('RTS_004', 'unable to get the origins raw transaction', {
       transaction: options.transaction,
       incomingTrans: options.incomingTrans,
       error: err,
     })
-    callback(false)
+    callback(false, { message: 'unable to get the origins raw transaction' })
   })
 }
 
@@ -83,7 +88,7 @@ ReturnToSender.decodeOriginInputRaw = (options, callback) => {
       inputRaw: options.inputRaw,
       error: err,
     })
-    callback(false)
+    callback(false, { message: 'unable to decode raw incoming transaction' })
   })
 }
 
