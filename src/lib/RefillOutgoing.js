@@ -1,11 +1,11 @@
 const lodash = require('lodash')
 
 const privateSettings = require('../settings/private.settings.json')
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
-const EncryptedData = require('./EncryptedData.js')
-const SendRawTransaction = require('./SendRawTransaction.js')
-const RandomizeTransactions = require('./RandomizeTransactions.js')
+let Logger = require('./Logger.js') // eslint-disable-line
+let NavCoin = require('./NavCoin.js') // eslint-disable-line
+let EncryptedData = require('./EncryptedData.js') // eslint-disable-line
+let SendRawTransaction = require('./SendRawTransaction.js') // eslint-disable-line
+let RandomizeTransactions = require('./RandomizeTransactions.js') // eslint-disable-line
 
 const RefillOutgoing = {}
 
@@ -61,6 +61,10 @@ RefillOutgoing.processHolding = () => {
     return
   }
 
+  RefillOutgoing.checkIfHoldingIsSpendable()
+}
+
+RefillOutgoing.checkIfHoldingIsSpendable = () => {
   if (RefillOutgoing.runtime.currentHolding[0].confirmations > privateSettings.minConfs) {
     EncryptedData.getEncrypted({
       transaction: RefillOutgoing.runtime.currentHolding[0],
@@ -84,7 +88,16 @@ RefillOutgoing.holdingDecrypted = (success, data) => {
 
   RefillOutgoing.runtime.holdingTransaction = data.transaction
 
-  const addresses = JSON.parse(data.decrypted)
+  const addresses = JSON.parse(data.decrypted) // @TODO try, catch this
+
+  if (addresses.constructor !== Array) {
+    Logger.writeLog('RFL_007A', 'decrypted data not an array of addresses', { currentHolding: RefillOutgoing.runtime.currentHolding })
+    RefillOutgoing.runtime.currentHolding.splice(0, 1)
+    RefillOutgoing.processHolding()
+    return
+  }
+
+  // @TODO check if addresses are valid?
 
   const numTransactions = Math.ceil(
     Math.random() * (addresses.length - (privateSettings.minNavTransactions - 1))
@@ -128,13 +141,10 @@ RefillOutgoing.sendRawRefillTransaction = (outgoingTransactions) => {
 
 RefillOutgoing.refillSent = (success, data) => {
   if (!success || !data || !data.rawOutcome) {
-    Logger.writeLog('INC_049', 'failed to send raw refill transaction', {
+    Logger.writeLog('RFL_009', 'failed to send raw refill transaction', {
       holdingTxid: RefillOutgoing.runtime.holdingTransaction.txid,
       holdingTransaction: RefillOutgoing.runtime.holdingTransaction,
     }, true)
-    RefillOutgoing.runtime.currentHolding.splice(0, 1)
-    RefillOutgoing.processHolding()
-    return
   }
   RefillOutgoing.runtime.currentHolding.splice(0, 1)
   RefillOutgoing.processHolding()

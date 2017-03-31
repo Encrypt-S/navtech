@@ -1,8 +1,8 @@
 const lodash = require('lodash')
-const request = require('request')
+let request = require('request') //eslint-disable-line
 
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let NavCoin = require('./NavCoin.js') //eslint-disable-line
 
 const RetrieveSubchainAddresses = {}
 
@@ -25,9 +25,8 @@ RetrieveSubchainAddresses.run = (options, callback) => {
 
 RetrieveSubchainAddresses.getSubAddresses = () => {
   const chosenOutgoing = RetrieveSubchainAddresses.runtime.chosenOutgoing
-
-  const outgoingHost = chosenOutgoing.host ? chosenOutgoing.host : chosenOutgoing.ipAddress
-  const outgoingAddress = chosenOutgoing.port ? outgoingHost + ':' + chosenOutgoing.port : outgoingHost
+  const outgoingAddress = chosenOutgoing.port ? chosenOutgoing.ipAddress + ':' + chosenOutgoing.port : chosenOutgoing.ipAddress
+  RetrieveSubchainAddresses.runtime.outgoingAddress = outgoingAddress
   const options = {
     uri: 'https://' + outgoingAddress + '/api/get-addresses',
     method: 'POST',
@@ -42,29 +41,40 @@ RetrieveSubchainAddresses.getSubAddresses = () => {
     },
   }
 
-  request(options, (err, response, body) => {
-    if (err) {
-      Logger.writeLog('RSC_004', 'failed to query outgoing server', { error: err, outgoingAddress })
-      RetrieveSubchainAddresses.runtime.callback(false, { message: 'failed to query outgoing server' })
-      return
-    }
-    RetrieveSubchainAddresses.checkOutgoingCanTransact(body, outgoingAddress)
-  })
+  request(options, RetrieveSubchainAddresses.requestResponse)
+}
+
+RetrieveSubchainAddresses.requestResponse = (err, response, body) => {
+  if (err) {
+    Logger.writeLog('RSC_004', 'failed to query outgoing server', {
+      error: err,
+      outgoingAddress: RetrieveSubchainAddresses.runtime.outgoingAddress,
+    })
+    RetrieveSubchainAddresses.runtime.callback(false, { message: 'failed to query outgoing server' })
+    return
+  }
+  RetrieveSubchainAddresses.checkOutgoingCanTransact(body, RetrieveSubchainAddresses.runtime.outgoingAddress)
 }
 
 RetrieveSubchainAddresses.checkOutgoingCanTransact = (body, outgoingAddress) => {
-  const bodyJson = JSON.parse(body)
-  if (bodyJson.type !== 'SUCCESS') {
-    Logger.writeLog('RSC_005', 'outgoing server returned failure', { body: bodyJson, outgoingAddress })
-    RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server returned failure' })
+  try {
+    const bodyJson = JSON.parse(body)
+    if (bodyJson.type !== 'SUCCESS') {
+      Logger.writeLog('RSC_005', 'outgoing server returned failure', { body: bodyJson, outgoingAddress })
+      RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server returned failure' })
+      return
+    }
+    if (!bodyJson.data || !bodyJson.data.addresses || bodyJson.data.addresses.constructor !== Array) {
+      Logger.writeLog('RSC_006', 'outgoing server returned incorrect params', { body: bodyJson, outgoingAddress })
+      RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server returned failure' })
+      return
+    }
+    RetrieveSubchainAddresses.checkSubAddresses(bodyJson.data.addresses)
+  } catch (error) {
+    Logger.writeLog('RSC_005A', 'outgoing server returned non json response', { body, error, outgoingAddress })
+    RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server returned non json response' })
     return
   }
-  if (!bodyJson.data || !bodyJson.data.addresses) {
-    Logger.writeLog('RSC_006', 'outgoing server returned incorrect params', { body: bodyJson, outgoingAddress })
-    RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server returned failure' })
-    return
-  }
-  RetrieveSubchainAddresses.checkSubAddresses(bodyJson.data.addresses)
 }
 
 RetrieveSubchainAddresses.checkSubAddresses = (outgoingSubAddresses) => {

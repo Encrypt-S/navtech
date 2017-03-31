@@ -3,8 +3,8 @@ const config = require('config')
 
 const globalSettings = config.get('GLOBAL')
 
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
+let Logger = require('./Logger.js') // eslint-disable-line
+let NavCoin = require('./NavCoin.js') // eslint-disable-line
 const privateSettings = require('../settings/private.settings.json')
 
 const PrepareIncoming = {}
@@ -66,7 +66,7 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
       !parseFloat(options.subBalance) ||
       !parseFloat(options.maxAmount)) {
     Logger.writeLog('NAV_006', 'pruneIncomingUnspent invalid params', { options })
-    callback(false, { error: 'invalid params' })
+    callback(false, { message: 'invalid params' })
     return
   }
   const currentBatch = []
@@ -85,7 +85,7 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
   if (hasPruned) {
     callback(true, { currentBatch, sumPending })
   } else {
-    callback(false, { error: 'no pruned' })
+    callback(false, { message: 'no pruned' })
   }
 }
 

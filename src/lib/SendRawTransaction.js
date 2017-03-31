@@ -1,9 +1,10 @@
 'use strict'
 
 const config = require('config')
+const lodash = require('lodash')
 
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let NavCoin = require('./NavCoin.js') //eslint-disable-line
 
 const globalSettings = config.get('GLOBAL')
 
@@ -14,9 +15,10 @@ if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
 const SendRawTransaction = {}
 
 SendRawTransaction.createRaw = (options, callback) => {
-  if (!options.spentTransactions || !options.outgoingTransactions || !options.client) {
-    Logger.writeLog('RAW_001', 'unable to decode raw incoming transaction', { options })
-    callback(false)
+  const required = ['spentTransactions', 'outgoingTransactions', 'client']
+  if (lodash.intersection(Object.keys(options), required).length !== required.length) {
+    Logger.writeLog('RAW_001', 'invalid options', { options, required })
+    callback(false, { message: 'invalid options provided to SelectOutgoing.run' })
     return
   }
   SendRawTransaction.runtime = {} // wipe the runtime variables

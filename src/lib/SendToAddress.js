@@ -1,9 +1,10 @@
 'use strict'
 
 const config = require('config')
+const lodash = require('lodash')
 
-const Logger = require('./Logger.js')
-const NavCoin = require('./NavCoin.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let NavCoin = require('./NavCoin.js') //eslint-disable-line
 
 const globalSettings = config.get('GLOBAL')
 
@@ -14,11 +15,13 @@ if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
 const SendToAddress = {}
 
 SendToAddress.send = (options, callback) => {
-  if (!options.client || !options.address || !options.amount) {
-    Logger.writeLog('STA_001', 'invalid params', { options })
-    callback(false)
+  const required = ['client', 'address', 'amount', 'transaction']
+  if (lodash.intersection(Object.keys(options), required).length !== required.length) {
+    Logger.writeLog('STA_001', 'invalid options', { options, required })
+    callback(false, { message: 'invalid options provided to SelectOutgoing.run' })
     return
   }
+
   SendToAddress.runtime = {}
 
   if (options.counter && options.counter > 7) {
@@ -40,6 +43,7 @@ SendToAddress.send = (options, callback) => {
       NavCoin.unlockWallet({ settings, client: options.client, type }, SendToAddress.walletUnlocked)
       return
     }
+    // @NOTE not able to test because timeout is longer than the tests will allow
     Logger.writeLog('STA_003', 'failed send to address', { transaction: options.transaction, error: err })
     setTimeout(() => {
       const counter = (options.counter) ? options.counter + 1 : 1
