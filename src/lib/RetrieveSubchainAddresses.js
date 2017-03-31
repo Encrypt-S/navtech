@@ -25,7 +25,6 @@ RetrieveSubchainAddresses.run = (options, callback) => {
 
 RetrieveSubchainAddresses.getSubAddresses = () => {
   const chosenOutgoing = RetrieveSubchainAddresses.runtime.chosenOutgoing
-
   const outgoingAddress = chosenOutgoing.port ? chosenOutgoing.ipAddress + ':' + chosenOutgoing.port : chosenOutgoing.ipAddress
   RetrieveSubchainAddresses.runtime.outgoingAddress = outgoingAddress
   const options = {

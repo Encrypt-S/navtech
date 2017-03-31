@@ -1,10 +1,10 @@
 const lodash = require('lodash')
-const request = require('request')
-const ursa = require('ursa')
+let request = require('request') //eslint-disable-line
+let ursa = require('ursa') //eslint-disable-line
 const fs = require('fs')
 
 const privateSettings = require('../settings/private.settings.json')
-const Logger = require('./Logger.js')
+let Logger = require('./Logger.js') //eslint-disable-line
 const NavCoin = require('./NavCoin.js')
 const EncryptionKeys = require('./EncryptionKeys.js')
 
@@ -17,6 +17,13 @@ SelectOutgoing.run = (options, callback) => {
     callback(false, { message: 'invalid options provided to SelectOutgoing.run' })
     return
   }
+
+  if (!options.settings.remote || options.settings.remote.length < 1) {
+    Logger.writeLog('SEL_002', 'no remote servers detected', { remoteCluster: options.settings.remote })
+    callback(false, { message: 'no remote servers detected' })
+    return
+  }
+
   SelectOutgoing.runtime = {
     callback,
     remoteCluster: JSON.parse(JSON.stringify(options.settings.remote)),
@@ -24,11 +31,6 @@ SelectOutgoing.run = (options, callback) => {
     navClient: options.navClient,
   }
 
-  if (!SelectOutgoing.runtime.remoteCluster || SelectOutgoing.runtime.remoteCluster.length < 1) {
-    Logger.writeLog('SEL_002', 'no remote servers detected', { remoteCluster: SelectOutgoing.runtime.remoteCluster })
-    SelectOutgoing.runtime.callback(false, { message: 'no remote servers detected' })
-    return
-  }
   SelectOutgoing.pickServer()
 }
 
@@ -46,8 +48,8 @@ SelectOutgoing.pickServer = () => {
 }
 
 SelectOutgoing.testOutgoing = (chosenOutgoing) => {
-  const outgoingHost = chosenOutgoing.host ? chosenOutgoing.host : chosenOutgoing.ipAddress
-  const outgoingAddress = chosenOutgoing.port ? outgoingHost + ':' + chosenOutgoing.port : outgoingHost
+  const outgoingAddress = chosenOutgoing.port ? chosenOutgoing.ipAddress + ':' + chosenOutgoing.port : chosenOutgoing.ipAddress
+  SelectOutgoing.runtime.outgoingAddress = outgoingAddress
   const options = {
     uri: 'https://' + outgoingAddress + '/api/check-node',
     method: 'POST',
@@ -61,43 +63,54 @@ SelectOutgoing.testOutgoing = (chosenOutgoing) => {
     },
   }
 
-  request(options, (err, response, body) => {
-    if (err) {
-      Logger.writeLog('SEL_004', 'failed to query outgoing server', { body, outgoingAddress, error: err })
+  request(options, SelectOutgoing.gotServerResponse)
+}
+
+SelectOutgoing.gotServerResponse = (err, response, body) => {
+  if (err) {
+    Logger.writeLog('SEL_004', 'failed to query outgoing server', {
+      body, outgoingAddress: SelectOutgoing.runtime.outgoingAddress, error: err,
+    })
+    SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
+    SelectOutgoing.pickServer()
+    return
+  }
+  SelectOutgoing.checkOutgoingCanTransact(body, SelectOutgoing.runtime.outgoingAddress)
+}
+
+SelectOutgoing.checkOutgoingCanTransact = (body, outgoingAddress) => {
+  try {
+    const bodyJson = JSON.parse(body) // @TODO try catch around this
+    if (bodyJson.type !== 'SUCCESS') {
+      Logger.writeLog('SEL_005', 'outgoing server returned failure', { body: bodyJson, outgoingAddress })
       SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
       SelectOutgoing.pickServer()
       return
     }
-    SelectOutgoing.checkOutgoingCanTransact(body, outgoingAddress)
-  })
-}
 
-SelectOutgoing.checkOutgoingCanTransact = (body, outgoingAddress) => {
-  const bodyJson = JSON.parse(body) // @TODO try catch around this
-  if (bodyJson.type !== 'SUCCESS') {
-    Logger.writeLog('SEL_005', 'outgoing server returned failure', { body: bodyJson, outgoingAddress })
+    if (!bodyJson.data || !bodyJson.data.nav_addresses || !bodyJson.data.nav_balance || !bodyJson.data.public_key) {
+      Logger.writeLog('SEL_006', 'outgoing server returned incorrect params', { body: bodyJson, outgoingAddress })
+      SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
+      SelectOutgoing.pickServer()
+      return
+    }
+
+    SelectOutgoing.runtime.outgoingServerData = bodyJson.data
+    SelectOutgoing.runtime.outgoingNavBalance = bodyJson.data.nav_balance
+
+    if (SelectOutgoing.runtime.outgoingServerData.server_type !== 'OUTGOING') {
+      Logger.writeLog('SEL_007', 'outgoing server is of the wrong type', { body: SelectOutgoing.runtime.outgoingServerData })
+      SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
+      SelectOutgoing.pickServer()
+      return
+    }
+    SelectOutgoing.checkPublicKey()
+  } catch (error) {
+    Logger.writeLog('SEL_005A', 'outgoing server returned non json response', { body, outgoingAddress })
     SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
     SelectOutgoing.pickServer()
     return
   }
-
-  if (!bodyJson.data || !bodyJson.data.nav_addresses || !bodyJson.data.nav_balance || !bodyJson.data.public_key) {
-    Logger.writeLog('SEL_006', 'outgoing server returned incorrect params', { body: bodyJson, outgoingAddress })
-    SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
-    SelectOutgoing.pickServer()
-    return
-  }
-
-  SelectOutgoing.runtime.outgoingServerData = bodyJson.data
-  SelectOutgoing.runtime.outgoingNavBalance = bodyJson.data.nav_balance
-
-  if (SelectOutgoing.runtime.outgoingServerData.server_type !== 'OUTGOING') {
-    Logger.writeLog('SEL_007', 'outgoing server is of the wrong type', { body: SelectOutgoing.runtime.outgoingServerData })
-    SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
-    SelectOutgoing.pickServer()
-    return
-  }
-  SelectOutgoing.checkPublicKey()
 }
 
 SelectOutgoing.checkPublicKey = () => {

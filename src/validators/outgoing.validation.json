@@ -1,9 +1,5 @@
 {
   "local": {
-    "host": {
-      "required": false,
-      "type": "DOMAIN"
-    },
     "ipAddress": {
       "required": true,
       "type": "IP_ADDRESS"
