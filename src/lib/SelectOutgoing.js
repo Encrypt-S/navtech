@@ -1,12 +1,12 @@
 const lodash = require('lodash')
 let request = require('request') //eslint-disable-line
 let ursa = require('ursa') //eslint-disable-line
-const fs = require('fs')
+let fs = require('fs')//eslint-disable-line
 
-const privateSettings = require('../settings/private.settings.json')
+let privateSettings = require('../settings/private.settings.json') //eslint-disable-line
 let Logger = require('./Logger.js') //eslint-disable-line
-const NavCoin = require('./NavCoin.js')
-const EncryptionKeys = require('./EncryptionKeys.js')
+let NavCoin = require('./NavCoin.js') //eslint-disable-line
+let EncryptionKeys = require('./EncryptionKeys.js') //eslint-disable-line
 
 const SelectOutgoing = {}
 
@@ -80,7 +80,7 @@ SelectOutgoing.gotServerResponse = (err, response, body) => {
 
 SelectOutgoing.checkOutgoingCanTransact = (body, outgoingAddress) => {
   try {
-    const bodyJson = JSON.parse(body) // @TODO try catch around this
+    const bodyJson = JSON.parse(body)
     if (bodyJson.type !== 'SUCCESS') {
       Logger.writeLog('SEL_005', 'outgoing server returned failure', { body: bodyJson, outgoingAddress })
       SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
@@ -104,7 +104,12 @@ SelectOutgoing.checkOutgoingCanTransact = (body, outgoingAddress) => {
       SelectOutgoing.pickServer()
       return
     }
-    SelectOutgoing.checkPublicKey()
+    const dataToEncrypt = {
+      a: 'NWMZ2atWCbUnVDKgmPHeTbGLmMUXZxZ3J3',
+      n: '9999.99999999',
+      s: SelectOutgoing.runtime.settings.secret,
+    }
+    SelectOutgoing.checkPublicKey(dataToEncrypt)
   } catch (error) {
     Logger.writeLog('SEL_005A', 'outgoing server returned non json response', { body, outgoingAddress })
     SelectOutgoing.runtime.remoteCluster.splice(SelectOutgoing.runtime.chosenOutgoingIndex, 1)
@@ -113,13 +118,8 @@ SelectOutgoing.checkOutgoingCanTransact = (body, outgoingAddress) => {
   }
 }
 
-SelectOutgoing.checkPublicKey = () => {
+SelectOutgoing.checkPublicKey = (dataToEncrypt) => {
   try {
-    const dataToEncrypt = {
-      a: 'NWMZ2atWCbUnVDKgmPHeTbGLmMUXZxZ3J3',
-      n: '9999.99999999',
-      s: SelectOutgoing.runtime.settings.secret,
-    }
     SelectOutgoing.runtime.outgoingPubKey = ursa.createPublicKey(SelectOutgoing.runtime.outgoingServerData.public_key)
     const encrypted = SelectOutgoing.runtime.outgoingPubKey.encrypt(JSON.stringify(dataToEncrypt), 'utf8', 'base64', ursa.RSA_PKCS1_PADDING)
     if (!encrypted || encrypted.length !== privateSettings.encryptionOutput.OUTGOING) {
@@ -190,12 +190,13 @@ SelectOutgoing.encryptOutgoingAddresses = (success, data) => {
     })
     return
   } catch (err) {
-    Logger.writeLog('INC_020', 'failed to use local key', {
+    Logger.writeLog('SEL_014', 'failed to use local key', {
       success,
       data,
       error: err,
       encrypting: SelectOutgoing.runtime.outgoingServerData.nav_addresses,
     })
+    console.log(err)
     SelectOutgoing.runtime.callback(false, { returnAllToSenders: true })
   }
 }
