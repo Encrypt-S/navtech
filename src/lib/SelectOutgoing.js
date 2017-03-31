@@ -196,7 +196,6 @@ SelectOutgoing.encryptOutgoingAddresses = (success, data) => {
       error: err,
       encrypting: SelectOutgoing.runtime.outgoingServerData.nav_addresses,
     })
-    console.log(err)
     SelectOutgoing.runtime.callback(false, { returnAllToSenders: true })
   }
 }
