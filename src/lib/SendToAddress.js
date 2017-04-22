@@ -36,7 +36,11 @@ SendToAddress.send = (options, callback) => {
     return
   }
 
-  options.client.sendToAddress(options.address, parseFloat(options.amount), null, null, options.encrypted).then((sendOutcome) => {
+  const satoshiFactor = 100000000
+  const amountSatoshi = Math.floor(options.amount * satoshiFactor)
+  const safeAmount = amountSatoshi / satoshiFactor
+
+  options.client.sendToAddress(options.address, safeAmount, null, null, options.encrypted).then((sendOutcome) => {
     if (sendOutcome) {
       callback(true, { sendOutcome, transaction: options.transaction })
       return
