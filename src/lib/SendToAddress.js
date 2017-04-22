@@ -22,6 +22,12 @@ SendToAddress.send = (options, callback) => {
     return
   }
 
+  if (globalSettings.preventSend) {
+    Logger.writeLog('STA_TEST_001', 'preventSend triggered', { options })
+    callback(true, { sendOutcome: 'dummy-tx-id', transaction: options.transaction })
+    return
+  }
+
   SendToAddress.runtime = {}
 
   if (options.counter && options.counter > 7) {

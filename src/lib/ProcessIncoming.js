@@ -2,9 +2,9 @@ const lodash = require('lodash')
 const ursa = require('ursa')
 
 let Logger = require('./Logger.js') // eslint-disable-line
-let EncryptedData = require('./EncryptedData.js')
+let EncryptedData = require('./EncryptedData.js') // eslint-disable-line
 const privateSettings = require('../settings/private.settings.json')
-let SendToAddress = require('./SendToAddress.js')
+let SendToAddress = require('./SendToAddress.js') // eslint-disable-line
 
 const ProcessIncoming = {}
 

@@ -94,6 +94,11 @@ SendRawTransaction.walletUnlocked = (success, data) => {
 }
 
 SendRawTransaction.sendRaw = (options, callback) => {
+  if (globalSettings.preventSend) {
+    Logger.writeLog('RAW_TEST_001', 'preventSend triggered', { options })
+    callback(true, { rawOutcome: 'dummy-tx-id' })
+    return
+  }
   options.client.sendRawTransaction(options.signedRaw.hex).then((rawOutcome) => {
     callback(true, { rawOutcome })
   }).catch((err) => {
