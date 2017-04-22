@@ -2,11 +2,11 @@
   "GLOBAL": {
     "serverType": "INCOMING",
     "encryptedWallet": false,
-    "maintenance": true,
-    "preventSend": true,
-    "allowedIps": [
-      "192.168.1.1"
-    ]
+    "maintenance": false,
+    "preventSend": false,
+    "allowedIps": [{
+      "ipAddress": "192.168.1.1"
+    }]
   },
   "INCOMING": {
     "local": {
