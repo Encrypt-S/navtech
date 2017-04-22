@@ -40,7 +40,7 @@ RandomizeTransactions.randomizeIncoming = () => {
       const randAmount = Math.round(randSatoshis / satoshiFactor)
 
       if (randAmount > sumProcessed - runningTotal || i === RandomizeTransactions.runtime.addresses.length - 1) {
-        const remainingAmount = sumProcessed - runningTotal
+        const remainingAmount = Math.round(sumProcessed - runningTotal)
         RandomizeTransactions.runtime.transactions[RandomizeTransactions.runtime.addresses[i]] = remainingAmount / satoshiFactor
         runningTotal += remainingAmount
       } else {
@@ -91,7 +91,7 @@ RandomizeTransactions.randomizeOutgoing = () => {
       const randAmount = Math.round(randSatoshis / satoshiFactor)
 
       if (randAmount > sumPendingSatoshi - runningTotal || i === numTransactions - 1) {
-        const remainingAmount = Math.floor(sumPendingSatoshi - runningTotal)
+        const remainingAmount = Math.round(sumPendingSatoshi - runningTotal)
         RandomizeTransactions.runtime.transactions.push(remainingAmount / satoshiFactor)
         runningTotal += remainingAmount
       } else {

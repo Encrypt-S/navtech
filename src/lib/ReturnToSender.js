@@ -96,7 +96,7 @@ ReturnToSender.buildTransaction = (options, callback) => {
   const outgoingTransactions = {}
   const satoshiFactor = 100000000
   const newAmountFloat = options.transaction.amount - privateSettings.txFee
-  const amountSatoshi = Math.floor(newAmountFloat * satoshiFactor)
+  const amountSatoshi = Math.round(newAmountFloat * satoshiFactor)
 
   outgoingTransactions[options.origin] = amountSatoshi / satoshiFactor
 

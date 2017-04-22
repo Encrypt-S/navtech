@@ -37,7 +37,7 @@ SpendToHolding.createHoldingTransactions = (success, data) => {
   const satoshiFactor = 100000000
   let sumPendingSatoshi = 0
   for (const successful of SpendToHolding.runtime.successfulSubTransactions) {
-    sumPendingSatoshi += Math.floor(successful.amount * satoshiFactor) - Math.floor(privateSettings.txFee * satoshiFactor)
+    sumPendingSatoshi += Math.round(successful.amount * satoshiFactor) - Math.round(privateSettings.txFee * satoshiFactor)
   }
 
   const sumPending = sumPendingSatoshi / satoshiFactor

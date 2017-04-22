@@ -21,6 +21,7 @@ SendRawTransaction.createRaw = (options, callback) => {
     callback(false, { message: 'invalid options provided to SelectOutgoing.run' })
     return
   }
+
   SendRawTransaction.runtime = {} // wipe the runtime variables
   if (options.encrypted) {
     options.client.createRawTransaction(options.spentTransactions, options.outgoingTransactions, options.encrypted).then((rawTrans) => {
