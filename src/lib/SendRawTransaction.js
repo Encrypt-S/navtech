@@ -21,6 +21,7 @@ SendRawTransaction.createRaw = (options, callback) => {
     callback(false, { message: 'invalid options provided to SelectOutgoing.run' })
     return
   }
+
   SendRawTransaction.runtime = {} // wipe the runtime variables
   if (options.encrypted) {
     options.client.createRawTransaction(options.spentTransactions, options.outgoingTransactions, options.encrypted).then((rawTrans) => {
@@ -94,6 +95,11 @@ SendRawTransaction.walletUnlocked = (success, data) => {
 }
 
 SendRawTransaction.sendRaw = (options, callback) => {
+  if (globalSettings.preventSend) {
+    Logger.writeLog('RAW_TEST_001', 'preventSend triggered', { options })
+    callback(true, { rawOutcome: 'dummy-tx-id' })
+    return
+  }
   options.client.sendRawTransaction(options.signedRaw.hex).then((rawOutcome) => {
     callback(true, { rawOutcome })
   }).catch((err) => {

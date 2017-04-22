@@ -7,7 +7,7 @@ const sinon = require('sinon')
 let SendToAddress = rewire('../src/lib/SendToAddress')
 
 describe('[SendToAddress]', () => {
-  describe('(run)', () => {
+  describe('(send)', () => {
     it('should fail on params', (done) => {
       const callback = (success, data) => {
         expect(success).toBe(false)
@@ -67,7 +67,7 @@ describe('[SendToAddress]', () => {
       SendToAddress.__set__('Logger', mockLogger)
       SendToAddress.send({ address, amount, client, transaction, counter: 1 }, callback)
     })
-    it('should have the right params and fail to send due to locked wallet', (done) => {
+    it('should have the right params and succeed', (done) => {
       const callback = (success, data) => {
         expect(success).toBe(true)
         expect(data.transaction).toBe(transaction)
@@ -81,6 +81,27 @@ describe('[SendToAddress]', () => {
       }
       const address = 'ADDR'
       const amount = 10
+      const transaction = { txid: '1234' }
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      SendToAddress.__set__('Logger', mockLogger)
+      SendToAddress.send({ address, amount, client, transaction, counter: 1 }, callback)
+    })
+    it('should have the right params and successfully round the transaction', (done) => {
+      const callback = (success, data) => {
+        expect(success).toBe(true)
+        expect(data.transaction).toBe(transaction)
+        expect(data.sendOutcome.amount).toBe(100.12345678)
+        sinon.assert.notCalled(mockLogger.writeLog)
+        done()
+      }
+      const client = {
+        sendToAddress: (address, amount) => { return Promise.resolve({ amount }) },
+        port: '44444',
+      }
+      const address = 'ADDR'
+      const amount = 100.123456781111111
       const transaction = { txid: '1234' }
       const mockLogger = {
         writeLog: sinon.spy(),

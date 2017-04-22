@@ -94,7 +94,11 @@ ReturnToSender.decodeOriginInputRaw = (options, callback) => {
 
 ReturnToSender.buildTransaction = (options, callback) => {
   const outgoingTransactions = {}
-  outgoingTransactions[options.origin] = options.transaction.amount - privateSettings.txFee
+  const satoshiFactor = 100000000
+  const newAmountFloat = options.transaction.amount - privateSettings.txFee
+  const amountSatoshi = Math.round(newAmountFloat * satoshiFactor)
+
+  outgoingTransactions[options.origin] = amountSatoshi / satoshiFactor
 
   const spentTransactions = [{
     txid: options.transaction.txid,

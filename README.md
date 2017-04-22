@@ -98,9 +98,11 @@ Here are the detailed explaination of what the settings control and their defaul
 | `GLOBAL` | `object`      | true    | `none` | contains the global settings which control how your server operates |
 | `GLOBAL.serverType` | `string`      | true    | `INCOMING` | determines if your server is of incoming or outgoing type |
 | `GLOBAL.encryptedWallet` | `boolean`      | true    | `false` | flag for if the NavCoin and Subchain wallets are encrypted  |
+| `GLOBAL.preventSend` | `boolean`      | false    | `false` | flag to prevent sending of NAV & SUB for testing purposes  |
 | `GLOBAL.maintenance` | `boolean`      | false    | `false` | flag to turn your wallet to maintenance mode and restrict IP access  |
 | `GLOBAL.allowedIps` | `array`      | false    | `none` | array of allowed ip addresses when server is in maintenance mode  |
-| `GLOBAL.allowedIps[n]`       | `string`      | false    | `none` | ip address to allow for maintenance testing |
+| `GLOBAL.allowedIps[n]`       | `object`      | true    | `none` | contains the address information of a single user allowed while in maintenance |
+| `GLOBAL.allowedIps[n].ipAddress` |  `string` | true | `none` | ip address to allow for maintenance testing |
 | `INCOMING` | `object`      | true    | `none` | contains all the settings which are unique to incoming servers |
 | `INCOMING.local`       | `object`      | true    | `none` | contains the address information of the local (incoming) server |
 | `INCOMING.local.ipAddress` |  `string` | true | `none` | IP address of the local server |

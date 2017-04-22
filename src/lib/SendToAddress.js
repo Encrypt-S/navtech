@@ -22,6 +22,12 @@ SendToAddress.send = (options, callback) => {
     return
   }
 
+  if (globalSettings.preventSend) {
+    Logger.writeLog('STA_TEST_001', 'preventSend triggered', { options })
+    callback(true, { sendOutcome: 'dummy-tx-id', transaction: options.transaction })
+    return
+  }
+
   SendToAddress.runtime = {}
 
   if (options.counter && options.counter > 7) {
@@ -30,7 +36,11 @@ SendToAddress.send = (options, callback) => {
     return
   }
 
-  options.client.sendToAddress(options.address, parseFloat(options.amount), null, null, options.encrypted).then((sendOutcome) => {
+  const satoshiFactor = 100000000
+  const amountSatoshi = Math.round(options.amount * satoshiFactor)
+  const safeAmount = amountSatoshi / satoshiFactor
+
+  options.client.sendToAddress(options.address, safeAmount, null, null, options.encrypted).then((sendOutcome) => {
     if (sendOutcome) {
       callback(true, { sendOutcome, transaction: options.transaction })
       return

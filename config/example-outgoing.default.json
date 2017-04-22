@@ -1,7 +1,8 @@
 {
   "GLOBAL": {
     "serverType": "OUTGOING",
-    "encryptedWallet": false
+    "encryptedWallet": false,
+    "preventSend": true
   },
   "OUTGOING": {
     "local": {
