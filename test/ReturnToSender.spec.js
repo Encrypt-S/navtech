@@ -264,5 +264,33 @@ describe('[ReturnSubnav]', () => {
       ReturnToSender.__set__('privateSettings', privateSettings)
       ReturnToSender.buildTransaction({ client, origin, transaction }, callback)
     })
+    it('should build check the rounding is correct', (done) => {
+      const privateSettings = { txFee: 0.001 }
+      const callback = () => {}
+      const client = {}
+      const transaction = {
+        txid: '1234',
+        vout: 0,
+        amount: 100.123456781111111,
+      }
+      const origin = 'ZXCV'
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      const SendRawTransaction = {
+        createRaw: (options, parsedCallback) => {
+          expect(parsedCallback).toBe(callback)
+          expect(options.outgoingTransactions).toEqual({ ZXCV: 100.12245678 })
+          expect(options.spentTransactions).toEqual([{ txid: '1234', vout: 0 }])
+          expect(options.client).toBe(client)
+          sinon.assert.notCalled(mockLogger.writeLog)
+          done()
+        },
+      }
+      ReturnToSender.__set__('Logger', mockLogger)
+      ReturnToSender.__set__('SendRawTransaction', SendRawTransaction)
+      ReturnToSender.__set__('privateSettings', privateSettings)
+      ReturnToSender.buildTransaction({ client, origin, transaction }, callback)
+    })
   })
 })
