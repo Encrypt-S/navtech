@@ -52,12 +52,12 @@ ProcessIncoming.transactionFailed = () => {
 }
 
 ProcessIncoming.checkDecrypted = (success, data) => {
-  if (!success || !data || !data.decrypted || !data.transaction) {
+  if (!success || !data || !data.decrypted || !data.decrypted.n || !data.decrypted.t || !data.transaction) {
     Logger.writeLog('PROI_002', 'failed to decrypt transaction data', { success })
     ProcessIncoming.transactionFailed()
     return
   }
-  ProcessIncoming.runtime.navClient.validateAddress(data.decrypted).then((addressInfo) => {
+  ProcessIncoming.runtime.navClient.validateAddress(data.decrypted.n).then((addressInfo) => {
     if (addressInfo.isvalid !== true) {
       Logger.writeLog('PROI_003', 'encrypted address invalid', { success, data })
       ProcessIncoming.transactionFailed()
