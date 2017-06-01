@@ -2,10 +2,11 @@ const lodash = require('lodash')
 const config = require('config')
 
 const globalSettings = config.get('GLOBAL')
+const privateSettings = require('../settings/private.settings.json')
 
 let Logger = require('./Logger.js') // eslint-disable-line
 let NavCoin = require('./NavCoin.js') // eslint-disable-line
-const privateSettings = require('../settings/private.settings.json')
+let FlattenTransactions = require('./FlattenTransactions.js') // eslint-disable-line
 
 const PrepareIncoming = {}
 
@@ -21,6 +22,9 @@ PrepareIncoming.run = (options, callback) => {
     navClient: options.navClient,
     outgoingNavBalance: options.outgoingNavBalance,
     subBalance: options.subBalance,
+    currentFlattened: {},
+    currentBatch: [],
+    numFlattened: 0,
   }
 
   PrepareIncoming.getUnspent()
@@ -95,9 +99,40 @@ PrepareIncoming.unspentPruned = (success, data) => {
     PrepareIncoming.runtime.callback(false, { message: 'failed to prune unspent' })
     return
   }
-
-  PrepareIncoming.runtime.callback(true, { currentBatch: data.currentBatch })
+  PrepareIncoming.runtime.remainingToFlatten = data.currentBatch
+  PrepareIncoming.runtime.currentBatch = data.currentBatch
+  FlattenTransactions.incoming({
+    amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+  }, PrepareIncoming.flattened)
   return
+}
+
+PrepareIncoming.flattened = (success, data) => {
+  if (!success || !data || !data.flattened) {
+    Logger.writeLog('PREPI_004', 'failed to flatten transactions', {
+      success,
+      data,
+      runtime: PrepareIncoming.runtime,
+    })
+    PrepareIncoming.runtime.callback(false, { message: 'failed to flatten transactions' })
+    return
+  }
+
+  PrepareIncoming.runtime.numFlattened += data.flattened.length
+  PrepareIncoming.runtime.currentFlattened[PrepareIncoming.runtime.remainingToFlatten[0].txid] = data.flattened
+  PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
+
+  if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
+    PrepareIncoming.runtime.callback(true, {
+      currentBatch: PrepareIncoming.runtime.currentBatch,
+      currentFlattened: PrepareIncoming.runtime.currentFlattened,
+      numFlattened: PrepareIncoming.runtime.numFlattened,
+    })
+    return
+  }
+  FlattenTransactions.incoming({
+    amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+  }, PrepareIncoming.flattened)
 }
 
 module.exports = PrepareIncoming

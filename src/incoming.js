@@ -127,15 +127,17 @@ IncomingServer.allPendingReturned = (success, data) => {
 }
 
 IncomingServer.currentBatchPrepared = (success, data) => {
-  if (!success || !data || !data.currentBatch) {
+  if (!success || !data || !data.currentBatch || !data.currentFlattened || !data.numFlattened) {
     IncomingServer.processing = false
     return
   }
   IncomingServer.runtime.currentBatch = data.currentBatch
+  IncomingServer.runtime.currentFlattened = data.currentFlattened
+  IncomingServer.runtime.numFlattened = data.numFlattened
   RetrieveSubchainAddresses.run({
     subClient: IncomingServer.subClient,
     chosenOutgoing: IncomingServer.runtime.chosenOutgoing,
-    currentBatch: data.currentBatch,
+    numAddresses: data.numFlattened,
   }, IncomingServer.retrievedSubchainAddresses)
 }
 

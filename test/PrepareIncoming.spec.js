@@ -369,25 +369,124 @@ describe('[PrepareIncoming]', () => {
       PrepareIncoming.unspentPruned(
         true, { currentBatch: [] })
     })
-    it('should succeed and run the runtime.callback', (done) => {
+    it('should succeed to prune the current batch and run FlattenTransactions.incoming', (done) => {
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      const mockFlattenTransactions = {
+        incoming: (options, callback) => {
+          expect(options.amountToFlatten).toBe(100)
+          expect(callback).toBe(PrepareIncoming.flattened)
+          sinon.assert.notCalled(mockLogger.writeLog)
+          done()
+        },
+      }
+      PrepareIncoming.__set__('Logger', mockLogger)
+      PrepareIncoming.__set__('FlattenTransactions', mockFlattenTransactions)
+      const currentBatch = [
+        { amount: 100 },
+        { amount: 500 },
+      ]
+      PrepareIncoming.unspentPruned(
+        true, { currentBatch })
+    })
+  })
+  describe('(flattened)', () => {
+    before(() => { // reset the rewired functions
+      PrepareIncoming = rewire('../src/lib/PrepareIncoming')
+    })
+    it('should fail with false success', (done) => {
       const mockLogger = {
         writeLog: sinon.spy(),
       }
       PrepareIncoming.__set__('Logger', mockLogger)
       PrepareIncoming.runtime = {
         callback: (success, data) => {
-          expect(success).toBe(true)
-          expect(data.currentBatch).toBe(currentBatch)
+          expect(success).toBe(false)
+          expect(data.message).toBeA('string')
+          sinon.assert.calledOnce(mockLogger.writeLog)
+          sinon.assert.calledWith(mockLogger.writeLog, 'PREPI_004')
+          done()
+        },
+      }
+      PrepareIncoming.flattened(false, {})
+    })
+    it('should fail with bad data', (done) => {
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PrepareIncoming.__set__('Logger', mockLogger)
+      PrepareIncoming.runtime = {
+        callback: (success, data) => {
+          expect(success).toBe(false)
+          expect(data.message).toBeA('string')
+          sinon.assert.calledOnce(mockLogger.writeLog)
+          sinon.assert.calledWith(mockLogger.writeLog, 'PREPI_004')
+          done()
+        },
+      }
+      PrepareIncoming.flattened(true, { junkParam: '1234' })
+    })
+    it('should get the flattened and move onto the next one', (done) => {
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PrepareIncoming.__set__('Logger', mockLogger)
+      const mockFlattenTransactions = {
+        incoming: (options, callback) => {
+          expect(options.amountToFlatten).toBe(542)
+          expect(callback).toBe(PrepareIncoming.flattened)
+          expect(PrepareIncoming.runtime.remainingToFlatten).toEqual([{ txid: 'ASD', amount: 542 }])
+          expect(PrepareIncoming.runtime.numFlattened).toBe(16)
+          expect(PrepareIncoming.runtime.currentFlattened.QWE).toEqual([100, 100, 10, 10, 10, 1])
           sinon.assert.notCalled(mockLogger.writeLog)
           done()
         },
       }
-      const currentBatch = [
-        { amount: 100 },
-        { amount: 100 },
-      ]
-      PrepareIncoming.unspentPruned(
-        true, { currentBatch })
+      PrepareIncoming.__set__('Logger', mockLogger)
+      PrepareIncoming.__set__('FlattenTransactions', mockFlattenTransactions)
+      PrepareIncoming.runtime = {
+        remainingToFlatten: [
+          { txid: 'QWE', amount: 231 },
+          { txid: 'ASD', amount: 542 },
+        ],
+        numFlattened: 10,
+        currentFlattened: {},
+      }
+      PrepareIncoming.flattened(true, { flattened: [100, 100, 10, 10, 10, 1] })
+    })
+    it('should flatten the last one and run the callback', (done) => {
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PrepareIncoming.__set__('Logger', mockLogger)
+      PrepareIncoming.runtime = {
+        currentBatch: [
+          { txid: 'QWE', amount: 231 },
+          { txid: 'ASD', amount: 542 },
+        ],
+        remainingToFlatten: [
+          { txid: 'ASD', amount: 542 },
+        ],
+        numFlattened: 16,
+        currentFlattened: {
+          QWE: [100, 100, 10, 10, 10, 1],
+        },
+        callback: (success, data) => {
+          expect(success).toBe(true)
+          expect(data.numFlattened).toBe(27)
+          expect(data.currentFlattened).toEqual({
+            QWE: [100, 100, 10, 10, 10, 1],
+            ASD: [100, 100, 100, 100, 100, 10, 10, 10, 10, 1, 1],
+          })
+          expect(data.currentBatch).toEqual([
+            { txid: 'QWE', amount: 231 },
+            { txid: 'ASD', amount: 542 },
+          ])
+          done()
+        },
+      }
+      PrepareIncoming.flattened(true, { flattened: [100, 100, 100, 100, 100, 10, 10, 10, 10, 1, 1] })
     })
   })
 })
