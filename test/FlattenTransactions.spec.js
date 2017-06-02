@@ -43,7 +43,7 @@ describe('[FlattenTransactions]', () => {
         done()
       }
       FlattenTransactions.incoming({
-        totalToSend: 1126.65,
+        amountToFlatten: 1126.65,
       }, callback)
     })
     it('should flatten transactions 10', (done) => {
@@ -58,7 +58,7 @@ describe('[FlattenTransactions]', () => {
         done()
       }
       FlattenTransactions.incoming({
-        totalToSend: 10,
+        amountToFlatten: 10,
       }, callback)
     })
     it('should flatten transactions 10000', (done) => {
@@ -73,7 +73,7 @@ describe('[FlattenTransactions]', () => {
         done()
       }
       FlattenTransactions.incoming({
-        totalToSend: 10000,
+        amountToFlatten: 10000,
       }, callback)
     })
     it('should flatten transactions 100.99999999', (done) => {
@@ -88,7 +88,7 @@ describe('[FlattenTransactions]', () => {
         done()
       }
       FlattenTransactions.incoming({
-        totalToSend: 100.99999999,
+        amountToFlatten: 100.99999999,
       }, callback)
     })
     it('should flatten transactions 9999.99999999', (done) => {
@@ -106,7 +106,7 @@ describe('[FlattenTransactions]', () => {
         done()
       }
       FlattenTransactions.incoming({
-        totalToSend: 9999.99999999,
+        amountToFlatten: 9999.99999999,
       }, callback)
     })
     it('should flatten transactions 333.33333333', (done) => {
@@ -123,7 +123,7 @@ describe('[FlattenTransactions]', () => {
         done()
       }
       FlattenTransactions.incoming({
-        totalToSend: 333.33333333,
+        amountToFlatten: 333.33333333,
       }, callback)
     })
     it('should fail to flatten', (done) => {
@@ -138,7 +138,7 @@ describe('[FlattenTransactions]', () => {
       }
       FlattenTransactions.__set__('Logger', mockLogger)
       FlattenTransactions.incoming({
-        totalToSend: 'XYZ',
+        amountToFlatten: 'XYZ',
       }, callback)
     })
   })
