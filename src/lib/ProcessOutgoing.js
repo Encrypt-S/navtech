@@ -36,8 +36,8 @@ ProcessOutgoing.processPending = () => {
   ProcessOutgoing.runtime.partialTransactions = []
   RandomizeTransactions.outgoing({
     transaction: ProcessOutgoing.runtime.remainingTransactions[0],
-    amount: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n,
-    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.a,
+    amount: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.v, // value
+    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n, // nav
   }, ProcessOutgoing.amountsRandomized)
   return
 }
