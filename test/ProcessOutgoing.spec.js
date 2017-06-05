@@ -78,14 +78,14 @@ describe('[ProcessOutgoing]', () => {
       const remainingTransactions = [
         {
           decrypted: {
-            n: 10,
-            a: 'XYZ',
+            v: 10,
+            n: 'XYZ',
           },
         },
         {
           decrypted: {
-            n: 100,
-            a: 'XYZ',
+            v: 100,
+            n: 'XYZ',
           },
         },
       ]
@@ -96,10 +96,10 @@ describe('[ProcessOutgoing]', () => {
         callback: () => {},
       }
       const RandomizeTransactions = {
-        outgoing: (settings, callback) => {
-          expect(settings.transaction).toBe(remainingTransactions[0])
-          expect(settings.amount).toBe(10)
-          expect(settings.address).toBe('XYZ')
+        outgoing: (options, callback) => {
+          expect(options.transaction).toBe(remainingTransactions[0])
+          expect(options.amount).toBe(10)
+          expect(options.address).toBe('XYZ')
           expect(callback).toBe(ProcessOutgoing.amountsRandomized)
           done()
         },
@@ -184,15 +184,15 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
@@ -229,8 +229,8 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const remainingTransactions = [
@@ -267,15 +267,15 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
@@ -313,15 +313,15 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
@@ -352,15 +352,15 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
@@ -391,15 +391,15 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [

@@ -11,15 +11,16 @@ FlattenTransactions.incoming = (options, callback) => {
     callback(false, { message: 'invalid options provided to FlattenTransactions.incoming' })
     return
   }
-
+  const unsafeAmount = options.amountToFlatten - (options.amountToFlatten * options.anonFeePercent / 100)
   FlattenTransactions.runtime = {
     callback,
-    amountToFlatten: options.amountToFlatten - (options.amountToFlatten * options.anonFeePercent / 100),
+    amountToFlatten: FlattenTransactions.satoshiParser(unsafeAmount),
   }
   FlattenTransactions.flattenIncoming()
 }
 
 FlattenTransactions.flattenIncoming = () => {
+  console.log('FlattenTransactions.runtime.amountToFlatten', FlattenTransactions.runtime.amountToFlatten)
   const totalInt = Math.floor(FlattenTransactions.runtime.amountToFlatten)
   const totalIntString = totalInt.toString()
   const decimal = FlattenTransactions.runtime.amountToFlatten - totalInt

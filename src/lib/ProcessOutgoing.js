@@ -83,7 +83,7 @@ ProcessOutgoing.createNavTransactions = () => {
 
   SendToAddress.send({
     client: ProcessOutgoing.runtime.navClient,
-    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.a,
+    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n,
     amount: ProcessOutgoing.runtime.partialTransactions[0],
     transaction: ProcessOutgoing.runtime.remainingTransactions[0],
   }, ProcessOutgoing.sentPartialNav)

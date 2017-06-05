@@ -77,6 +77,7 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
   const currentBatch = []
   let hasPruned = false
   let sumPending = 0
+  // @TODO maxAmount may not be totally spendable as we now time delay on the outgoing server
   for (const pending of options.currentPending) {
     if ((currentBatch.length + 1) * (parseFloat(privateSettings.subCoinsPerTx) + parseFloat(privateSettings.subChainTxFee))
         <= options.subBalance &&
