@@ -10,24 +10,11 @@ let mockLogger = {
   writeLog: sinon.spy(),
 }
 
-let mockRuntime = {
-  currentBatch: [],
-  settings: { setting: true },
-  subClient: { test: true },
-  navClient: { test: true },
-  outgoingPubKey: '123443',
-  subAddresses: [],
-  transactionsToReturn: [],
-  successfulSubTransactions: [],
-  remainingTransactions: [],
-}
-
 beforeEach(() => {
   ProcessIncoming = rewire('../src/lib/ProcessIncoming')
   mockLogger = {
     writeLog: sinon.spy(),
   }
-  mockRuntime = {}
 })
 
 describe('[ProcessIncoming]', () => {
@@ -181,14 +168,13 @@ describe('[ProcessIncoming]', () => {
       ProcessIncoming.checkDecrypted(true, { decrypted: { n: 'XYZ', t: 120 } })
     })
     it('should log a message out when isValid is false', (done) => {
-      mockRuntime = {
+      ProcessIncoming.runtime = {
         navClient: {
           validateAddress: () => {
             return Promise.resolve({ isvalid: false })
           },
         },
       }
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.transactionFailed = () => {
         sinon.assert.calledOnce(mockLogger.writeLog)
         sinon.assert.calledWith(mockLogger.writeLog, 'PROI_003')
@@ -198,14 +184,13 @@ describe('[ProcessIncoming]', () => {
       ProcessIncoming.checkDecrypted(true, { transaction: true, decrypted: { n: 'XYZ', t: 120 } })
     })
     it('should log a message out when validateAddress call comes back false', (done) => {
-      mockRuntime = {
+      ProcessIncoming.runtime = {
         navClient: {
           validateAddress: () => {
             return Promise.reject({ message: 'mock failure' })
           },
         },
       }
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.transactionFailed = () => {
         sinon.assert.calledOnce(mockLogger.writeLog)
         sinon.assert.calledWith(mockLogger.writeLog, 'PROI_004')
