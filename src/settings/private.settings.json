@@ -16,8 +16,8 @@
     "OUTGOING": "outgoingAccount",
     "HOLDING": "holdingAccount"
   },
-  "maxAddresses": 250,
-  "maxHolding": 100,
+  "maxAddresses": 1000,
+  "maxHolding": 200,
   "minNavTransactions": 3,
   "maxNavTransactions": 8,
   "txFee": 0.0001,

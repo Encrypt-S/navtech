@@ -5,7 +5,7 @@ let Logger = require('./Logger.js') //eslint-disable-line
 const FlattenTransactions = {}
 
 FlattenTransactions.incoming = (options, callback) => {
-  const required = ['amountToFlatten']
+  const required = ['amountToFlatten', 'anonFeePercent']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('FLT_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to FlattenTransactions.incoming' })
@@ -14,7 +14,7 @@ FlattenTransactions.incoming = (options, callback) => {
 
   FlattenTransactions.runtime = {
     callback,
-    amountToFlatten: options.amountToFlatten,
+    amountToFlatten: options.amountToFlatten - (options.amountToFlatten * options.anonFeePercent / 100),
   }
   FlattenTransactions.flattenIncoming()
 }

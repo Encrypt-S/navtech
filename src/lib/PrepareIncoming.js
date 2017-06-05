@@ -11,7 +11,7 @@ let FlattenTransactions = require('./FlattenTransactions.js') // eslint-disable-
 const PrepareIncoming = {}
 
 PrepareIncoming.run = (options, callback) => {
-  const required = ['navClient', 'outgoingNavBalance', 'subBalance']
+  const required = ['navClient', 'outgoingNavBalance', 'subBalance', 'settings']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('PREPI_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ReturnAllToSenders.run' })
@@ -25,6 +25,7 @@ PrepareIncoming.run = (options, callback) => {
     currentFlattened: {},
     currentBatch: [],
     numFlattened: 0,
+    settings: options.settings,
   }
 
   PrepareIncoming.getUnspent()
@@ -103,6 +104,7 @@ PrepareIncoming.unspentPruned = (success, data) => {
   PrepareIncoming.runtime.currentBatch = data.currentBatch
   FlattenTransactions.incoming({
     amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+    anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
   }, PrepareIncoming.flattened)
   return
 }
