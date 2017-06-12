@@ -57,6 +57,7 @@ describe('[ProcessIncoming]', () => {
       ProcessIncoming.processPending = () => {
         expect(ProcessIncoming.runtime.callback).toBe(callback)
         expect(ProcessIncoming.runtime.currentBatch).toBe(mockOptions.currentBatch)
+        expect(ProcessIncoming.runtime.remainingTxGroups).toBe(mockOptions.currentBatch)
         expect(ProcessIncoming.runtime.settings).toBe(mockOptions.settings)
         expect(ProcessIncoming.runtime.subClient).toBe(mockOptions.subClient)
         expect(ProcessIncoming.runtime.navClient).toBe(mockOptions.navClient)
@@ -85,152 +86,56 @@ describe('[ProcessIncoming]', () => {
     })
   })
   describe('(processPending)', () => {
-    it('should callback with success when remainingTransactions < 1', (done) => {
+    it('should callback with success when remainingTxGroups < 1', (done) => {
       const callback = (success, data) => {
         expect(success).toBe(true)
-        expect(data.successfulSubTransactions).toEqual(['1234'])
-        expect(data.transactionsToReturn).toEqual('2345')
+        expect(data.successfulTxGroups).toEqual(['1234'])
+        expect(data.txGroupsToReturn).toEqual('2345')
         done()
       }
       ProcessIncoming.runtime = {
-        remainingTransactions: [],
-        successfulSubTransactions: ['1234'],
-        transactionsToReturn: ['2345'],
+        remainingTxGroups: [],
+        successfulTxGroups: ['1234'],
+        txGroupsToReturn: ['2345'],
         callback,
       }
       ProcessIncoming.__set__('Logger', mockLogger)
       ProcessIncoming.processPending()
     })
-    it('should call getEncrypted', (done) => {
+    it('should call proceed and call processPartial', (done) => {
       ProcessIncoming.runtime = {
-        navClient: { test: true },
-        remainingTransactions: ['ABC'],
-      }
-
-      const mockEncryptedData = {
-        getEncrypted: (options, callback) => {
-          expect(options.transaction).toBe('ABC')
-          expect(options.client).toBe(ProcessIncoming.runtime.navClient)
-          expect(callback).toBe(ProcessIncoming.checkDecrypted)
-          done()
-        },
-      }
-
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.__set__('EncryptedData', mockEncryptedData)
-      ProcessIncoming.processPending()
-    })
-  })
-  describe('(transactionFailed)', () => {
-    it('should transfer tx from remainingTransactions to transactionsToReturn and call procesPending', (done) => {
-      ProcessIncoming.runtime = {
-        transactionsToReturn: [],
-        remainingTransactions: ['1234', '2345'],
-      }
-      ProcessIncoming.processPending = () => {
-        expect(ProcessIncoming.runtime.remainingTransactions).toEqual(['2345'])
-        expect(ProcessIncoming.runtime.transactionsToReturn).toEqual(['1234'])
-        done()
-      }
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.transactionFailed()
-    })
-  })
-  describe('(checkDecrypted)', () => {
-    it('should log a message out when success is false', (done) => {
-      const mockTransactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_002')
-        done()
-      }
-      ProcessIncoming.transactionFailed = mockTransactionFailed
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(false, { transaction: true, data: true })
-    })
-    it('should log a message out when n or t is not found in data', (done) => {
-      const mockTransactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_002')
-        done()
-      }
-      ProcessIncoming.transactionFailed = mockTransactionFailed
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(true, { transaction: true, decrypted: { x: true, y: false } })
-    })
-    it('should log a message out when the transaction is not parsed', (done) => {
-      const mockTransactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_002')
-        done()
-      }
-      ProcessIncoming.transactionFailed = mockTransactionFailed
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(true, { decrypted: { n: 'XYZ', t: 120 } })
-    })
-    it('should log a message out when isValid is false', (done) => {
-      ProcessIncoming.runtime = {
-        navClient: {
-          validateAddress: () => {
-            return Promise.resolve({ isvalid: false })
-          },
-        },
-      }
-      ProcessIncoming.transactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_003')
-        done()
-      }
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(true, { transaction: true, decrypted: { n: 'XYZ', t: 120 } })
-    })
-    it('should log a message out when validateAddress call comes back false', (done) => {
-      ProcessIncoming.runtime = {
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-        },
-      }
-      ProcessIncoming.transactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_004')
-        done()
-      }
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(true, { transaction: true, decrypted: { n: 'XYZ', t: 120 } })
-    })
-    it('should call processPartial if everything has worked', (done) => {
-      ProcessIncoming.runtime = {
-        navClient: {
-          validateAddress: () => {
-            return Promise.resolve({ isvalid: true })
-          },
-        },
         currentFlattened: {
-          ABC: [100, 100, 100, 10, 10, 1],
+          QWE: [100, 100, 10, 10, 10, 1],
+          ASD: [100, 100, 100, 10, 10, 1],
+          ZXC: [1000, 100, 100, 10, 10, 1],
         },
+        remainingTxGroups: [
+          { unique: 'ASD', destination: '234', timeDelay: 20 },
+          { unique: 'QWE', destination: '123', timeDelay: 30 },
+          { unique: 'ZXC', destination: '345', timeDelay: 40 },
+        ],
       }
       ProcessIncoming.processPartial = () => {
         sinon.assert.notCalled(mockLogger.writeLog)
-        expect(ProcessIncoming.runtime.destination).toBe('XYZ')
-        expect(ProcessIncoming.runtime.maxDelay).toBe(120)
+        expect(ProcessIncoming.runtime.destination).toBe('234')
+        expect(ProcessIncoming.runtime.maxDelay).toBe(20)
         expect(ProcessIncoming.runtime.remainingFlattened).toEqual([100, 100, 100, 10, 10, 1])
         done()
       }
       ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(true, { transaction: { txid: 'ABC', amount: 321 }, decrypted: { n: 'XYZ', t: 120 } })
+      ProcessIncoming.processPending()
     })
   })
   describe('(processPartial)', () => {
     it('should call processPending when no more partials to process', (done) => {
       ProcessIncoming.runtime = {
         remainingFlattened: [],
-        remainingTransactions: [{ txid: 'QWE', amount: 100 }, { txid: 'ASD', amount: 100 }],
-        successfulSubTransactions: [],
+        remainingTxGroups: [{ txid: 'QWE', amount: 100 }, { txid: 'ASD', amount: 100 }],
+        successfulTxGroups: [],
       }
       ProcessIncoming.processPending = () => {
-        expect(ProcessIncoming.runtime.remainingTransactions).toEqual([{ txid: 'ASD', amount: 100 }])
-        expect(ProcessIncoming.runtime.successfulSubTransactions).toEqual([{ txid: 'QWE', amount: 100 }])
+        expect(ProcessIncoming.runtime.remainingTxGroups).toEqual([{ txid: 'ASD', amount: 100 }])
+        expect(ProcessIncoming.runtime.successfulTxGroups).toEqual([{ txid: 'QWE', amount: 100 }])
         sinon.assert.notCalled(mockLogger.writeLog)
         done()
       }
@@ -240,8 +145,8 @@ describe('[ProcessIncoming]', () => {
     it('should call reEncryptAddress when still more partials to process', (done) => {
       ProcessIncoming.runtime = {
         remainingFlattened: [100, 100],
-        remainingTransactions: [{ txid: 'QWE', amount: 100 }, { txid: 'ASD', amount: 100 }],
-        successfulSubTransactions: [],
+        remainingTxGroups: [{ txid: 'QWE', amount: 100 }, { txid: 'ASD', amount: 100 }],
+        successfulTxGroups: [],
         destination: 'ABC',
         maxDelay: 120,
       }
@@ -259,15 +164,61 @@ describe('[ProcessIncoming]', () => {
     })
   })
   describe('(partialFailed)', () => {
-    it('should call the logger and a false callback', (done) => {
+    it('should call the logger and a false because it has processed some partials', (done) => {
       ProcessIncoming.runtime = {
+        currentFlattened: {
+          QWE: [100, 100, 10, 10, 10, 1],
+          ASD: [100, 100, 100, 10, 10, 1],
+          ZXC: [1000, 100, 100, 10, 10, 1],
+        },
+        remainingFlattened: [100, 100, 10, 10, 1],
+        remainingTxGroups: [
+          { unique: 'ASD', destination: '234', timeDelay: 20 },
+          { unique: 'QWE', destination: '123', timeDelay: 30 },
+          { unique: 'ZXC', destination: '345', timeDelay: 40 },
+        ],
         callback: (success, data) => {
           expect(success).toBe(false)
           sinon.assert.calledOnce(mockLogger.writeLog)
           sinon.assert.calledWith(mockLogger.writeLog, 'PROI_009')
-          expect(data.message).toBeA('string')
+          expect(data.partialFailure).toBe(true)
           done()
         },
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.partialFailed()
+    })
+    it('should call try the next group and push the failed complete group to the return pile', (done) => {
+      ProcessIncoming.runtime = {
+        currentFlattened: {
+          QWE: [100, 100, 10, 10, 10, 1],
+          ASD: [100, 100, 100, 10, 10, 1],
+          ZXC: [1000, 100, 100, 10, 10, 1],
+        },
+        remainingFlattened: [100, 100, 100, 10, 10, 1],
+        remainingTxGroups: [
+          { unique: 'ASD', destination: '234', timeDelay: 20 },
+          { unique: 'QWE', destination: '123', timeDelay: 30 },
+          { unique: 'ZXC', destination: '345', timeDelay: 40 },
+        ],
+        txGroupsToReturn: [
+          { unique: 'LKJ', destination: '123', timeDelay: 30 },
+          { unique: 'POI', destination: '345', timeDelay: 40 },
+        ],
+      }
+      ProcessIncoming.processPending = () => {
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_009A')
+        expect(ProcessIncoming.runtime.remainingTxGroups).toEqual([
+          { unique: 'QWE', destination: '123', timeDelay: 30 },
+          { unique: 'ZXC', destination: '345', timeDelay: 40 },
+        ])
+        expect(ProcessIncoming.runtime.txGroupsToReturn).toEqual([
+          { unique: 'LKJ', destination: '123', timeDelay: 30 },
+          { unique: 'POI', destination: '345', timeDelay: 40 },
+          { unique: 'ASD', destination: '234', timeDelay: 20 },
+        ])
+        done()
       }
       ProcessIncoming.__set__('Logger', mockLogger)
       ProcessIncoming.partialFailed()

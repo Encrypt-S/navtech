@@ -578,6 +578,8 @@ const apiInit = () => {
     }))
   }
 
+  // @TODO check if server paused before returning as valid incoming server
+
   // -------------- CHECK IF SERVER IS PROCESSING ------------------------------------------------------------------------------------------
 
   app.get('/api/status', (req, res) => {

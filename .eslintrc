@@ -31,6 +31,6 @@
     "prefer-template": 0,
     "no-restricted-syntax": 0,
     "strict": 0,
-    "no-underscore-dangle": ["error", {"allow": ["__set__"]}]
+    "no-underscore-dangle": ["warn", {"allow": ["__set__", "_*"]}]
   }
 }
