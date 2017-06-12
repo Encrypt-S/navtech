@@ -111,6 +111,7 @@ IncomingServer.outgoingSelected = (success, data) => {
     navClient: IncomingServer.navClient,
     outgoingNavBalance: data.outgoingNavBalance,
     subBalance: IncomingServer.runtime.subBalance,
+    settings,
   }, IncomingServer.currentBatchPrepared)
 }
 
@@ -151,6 +152,7 @@ IncomingServer.retrievedSubchainAddresses = (success, data) => {
   }
   ProcessIncoming.run({
     currentBatch: IncomingServer.runtime.currentBatch,
+    currentFlattened: IncomingServer.runtime.currentFlattened,
     outgoingPubKey: IncomingServer.runtime.outgoingPubKey,
     subClient: IncomingServer.subClient,
     navClient: IncomingServer.navClient,

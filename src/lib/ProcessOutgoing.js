@@ -36,8 +36,8 @@ ProcessOutgoing.processPending = () => {
   ProcessOutgoing.runtime.partialTransactions = []
   RandomizeTransactions.outgoing({
     transaction: ProcessOutgoing.runtime.remainingTransactions[0],
-    amount: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n,
-    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.a,
+    amount: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.v, // value
+    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n, // nav
   }, ProcessOutgoing.amountsRandomized)
   return
 }
@@ -83,7 +83,7 @@ ProcessOutgoing.createNavTransactions = () => {
 
   SendToAddress.send({
     client: ProcessOutgoing.runtime.navClient,
-    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.a,
+    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n,
     amount: ProcessOutgoing.runtime.partialTransactions[0],
     transaction: ProcessOutgoing.runtime.remainingTransactions[0],
   }, ProcessOutgoing.sentPartialNav)

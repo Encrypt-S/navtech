@@ -10,38 +10,48 @@ let mockLogger = {
   writeLog: sinon.spy(),
 }
 
-let mockRuntime = {
-  currentBatch: [],
-  settings: { setting: true },
-  subClient: { test: true },
-  navClient: { test: true },
-  outgoingPubKey: '123443',
-  subAddresses: [],
-  transactionsToReturn: [],
-  successfulSubTransactions: [],
-  remainingTransactions: [],
-}
-
 beforeEach(() => {
   ProcessIncoming = rewire('../src/lib/ProcessIncoming')
   mockLogger = {
     writeLog: sinon.spy(),
   }
-  mockRuntime = {}
 })
 
 describe('[ProcessIncoming]', () => {
   describe('(run)', () => {
     it('should fail on params', (done) => {
-      const callback = (success, data) => {
+      const callback = (success) => {
         expect(success).toBe(false)
-        expect(data.message).toBeA('string')
         sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_001')
         done()
       }
 
       ProcessIncoming.__set__('Logger', mockLogger)
       ProcessIncoming.run({ junkParam: 1234 }, callback)
+    })
+    it('should fail to get the current block height', (done) => {
+      const callback = (success) => {
+        expect(success).toBe(false)
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_001A')
+        done()
+      }
+      const mockOptions = {
+        currentBatch: [],
+        settings: { setting: true },
+        subClient: { test: true },
+        navClient: {
+          getBlockCount: () => {
+            return Promise.reject({ err: { code: -21 } })
+          },
+        },
+        outgoingPubKey: '123443',
+        subAddresses: [],
+        currentFlattened: [],
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.run(mockOptions, callback)
     })
     it('should set the variables into runtime and call processPending', (done) => {
       ProcessIncoming.processPending = () => {
@@ -52,6 +62,8 @@ describe('[ProcessIncoming]', () => {
         expect(ProcessIncoming.runtime.navClient).toBe(mockOptions.navClient)
         expect(ProcessIncoming.runtime.outgoingPubKey).toBe(mockOptions.outgoingPubKey)
         expect(ProcessIncoming.runtime.subAddresses).toBe(mockOptions.subAddresses)
+        expect(ProcessIncoming.runtime.currentFlattened).toBe(mockOptions.currentFlattened)
+        expect(ProcessIncoming.runtime.currentBlockHeight).toBe(1000)
         done()
       }
       const callback = () => {}
@@ -59,9 +71,14 @@ describe('[ProcessIncoming]', () => {
         currentBatch: [],
         settings: { setting: true },
         subClient: { test: true },
-        navClient: { test: true },
+        navClient: {
+          getBlockCount: () => {
+            return Promise.resolve(1000)
+          },
+        },
         outgoingPubKey: '123443',
         subAddresses: [],
+        currentFlattened: [],
       }
       ProcessIncoming.__set__('Logger', mockLogger)
       ProcessIncoming.run(mockOptions, callback)
@@ -71,43 +88,29 @@ describe('[ProcessIncoming]', () => {
     it('should callback with success when remainingTransactions < 1', (done) => {
       const callback = (success, data) => {
         expect(success).toBe(true)
-        expect(data.successfulSubTransactions.length).toBe(0)
-        expect(data.transactionsToReturn.length).toBe(0)
+        expect(data.successfulSubTransactions).toEqual(['1234'])
+        expect(data.transactionsToReturn).toEqual('2345')
         done()
       }
-      mockRuntime = {
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: { test: true },
-        outgoingPubKey: '123443',
-        subAddresses: [],
+      ProcessIncoming.runtime = {
         remainingTransactions: [],
-        successfulSubTransactions: [],
-        transactionsToReturn: [],
+        successfulSubTransactions: ['1234'],
+        transactionsToReturn: ['2345'],
         callback,
       }
       ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.processPending()
     })
     it('should call getEncrypted', (done) => {
-      mockRuntime = {
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
+      ProcessIncoming.runtime = {
         navClient: { test: true },
-        outgoingPubKey: '123443',
-        subAddresses: [],
         remainingTransactions: ['ABC'],
-        successfulSubTransactions: [],
-        transactionsToReturn: [],
       }
 
       const mockEncryptedData = {
         getEncrypted: (options, callback) => {
           expect(options.transaction).toBe('ABC')
-          expect(options.client).toBe(mockRuntime.navClient)
+          expect(options.client).toBe(ProcessIncoming.runtime.navClient)
           expect(callback).toBe(ProcessIncoming.checkDecrypted)
           done()
         },
@@ -115,31 +118,22 @@ describe('[ProcessIncoming]', () => {
 
       ProcessIncoming.__set__('Logger', mockLogger)
       ProcessIncoming.__set__('EncryptedData', mockEncryptedData)
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.processPending()
     })
   })
   describe('(transactionFailed)', () => {
-    it('should transfer policy from remainingTransactions to TransactionsToReturn when failed', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: { test: true },
-        outgoingPubKey: '123443',
-        subAddresses: [],
+    it('should transfer tx from remainingTransactions to transactionsToReturn and call procesPending', (done) => {
+      ProcessIncoming.runtime = {
         transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
+        remainingTransactions: ['1234', '2345'],
+      }
+      ProcessIncoming.processPending = () => {
+        expect(ProcessIncoming.runtime.remainingTransactions).toEqual(['2345'])
+        expect(ProcessIncoming.runtime.transactionsToReturn).toEqual(['1234'])
+        done()
       }
       ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.transactionFailed()
-      expect(ProcessIncoming.runtime.remainingTransactions.length).toBe(0)
-      expect(ProcessIncoming.runtime.transactionsToReturn.length).toBe(1)
-      done()
     })
   })
   describe('(checkDecrypted)', () => {
@@ -174,26 +168,13 @@ describe('[ProcessIncoming]', () => {
       ProcessIncoming.checkDecrypted(true, { decrypted: { n: 'XYZ', t: 120 } })
     })
     it('should log a message out when isValid is false', (done) => {
-      const callback = () => {}
-      const addressInfo = { isvalid: false }
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
+      ProcessIncoming.runtime = {
         navClient: {
           validateAddress: () => {
-            return Promise.resolve(addressInfo)
+            return Promise.resolve({ isvalid: false })
           },
-          test: true,
         },
-        outgoingPubKey: '123443',
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
       }
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.transactionFailed = () => {
         sinon.assert.calledOnce(mockLogger.writeLog)
         sinon.assert.calledWith(mockLogger.writeLog, 'PROI_003')
@@ -203,25 +184,13 @@ describe('[ProcessIncoming]', () => {
       ProcessIncoming.checkDecrypted(true, { transaction: true, decrypted: { n: 'XYZ', t: 120 } })
     })
     it('should log a message out when validateAddress call comes back false', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
+      ProcessIncoming.runtime = {
         navClient: {
           validateAddress: () => {
             return Promise.reject({ message: 'mock failure' })
           },
-          test: true,
         },
-        outgoingPubKey: '123443',
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
       }
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.transactionFailed = () => {
         sinon.assert.calledOnce(mockLogger.writeLog)
         sinon.assert.calledWith(mockLogger.writeLog, 'PROI_004')
@@ -230,245 +199,240 @@ describe('[ProcessIncoming]', () => {
       ProcessIncoming.__set__('Logger', mockLogger)
       ProcessIncoming.checkDecrypted(true, { transaction: true, decrypted: { n: 'XYZ', t: 120 } })
     })
-    it('should call reEncryptAddress if everything has worked', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
+    it('should call processPartial if everything has worked', (done) => {
+      ProcessIncoming.runtime = {
         navClient: {
           validateAddress: () => {
             return Promise.resolve({ isvalid: true })
           },
-          test: true,
         },
-        outgoingPubKey: '123443',
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
+        currentFlattened: {
+          ABC: [100, 100, 100, 10, 10, 1],
+        },
       }
-      ProcessIncoming.runtime = mockRuntime
-      ProcessIncoming.reEncryptAddress = (decrypted, transaction, counter) => {
+      ProcessIncoming.processPartial = () => {
         sinon.assert.notCalled(mockLogger.writeLog)
-        expect(decrypted).toEqual({ n: 'XYZ', t: 120 })
-        expect(transaction).toBe('ABC')
-        expect(counter).toBe(0)
+        expect(ProcessIncoming.runtime.destination).toBe('XYZ')
+        expect(ProcessIncoming.runtime.maxDelay).toBe(120)
+        expect(ProcessIncoming.runtime.remainingFlattened).toEqual([100, 100, 100, 10, 10, 1])
         done()
       }
       ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.checkDecrypted(true, { transaction: 'ABC', decrypted: { n: 'XYZ', t: 120 } })
+      ProcessIncoming.checkDecrypted(true, { transaction: { txid: 'ABC', amount: 321 }, decrypted: { n: 'XYZ', t: 120 } })
+    })
+  })
+  describe('(processPartial)', () => {
+    it('should call processPending when no more partials to process', (done) => {
+      ProcessIncoming.runtime = {
+        remainingFlattened: [],
+        remainingTransactions: [{ txid: 'QWE', amount: 100 }, { txid: 'ASD', amount: 100 }],
+        successfulSubTransactions: [],
+      }
+      ProcessIncoming.processPending = () => {
+        expect(ProcessIncoming.runtime.remainingTransactions).toEqual([{ txid: 'ASD', amount: 100 }])
+        expect(ProcessIncoming.runtime.successfulSubTransactions).toEqual([{ txid: 'QWE', amount: 100 }])
+        sinon.assert.notCalled(mockLogger.writeLog)
+        done()
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.processPartial()
+    })
+    it('should call reEncryptAddress when still more partials to process', (done) => {
+      ProcessIncoming.runtime = {
+        remainingFlattened: [100, 100],
+        remainingTransactions: [{ txid: 'QWE', amount: 100 }, { txid: 'ASD', amount: 100 }],
+        successfulSubTransactions: [],
+        destination: 'ABC',
+        maxDelay: 120,
+      }
+      ProcessIncoming.reEncryptAddress = (destination, maxDelay, transaction, flattened, counter) => {
+        expect(destination).toBe('ABC')
+        expect(maxDelay).toBe(120)
+        expect(transaction).toEqual({ txid: 'QWE', amount: 100 })
+        expect(flattened).toBe(100)
+        expect(counter).toBe(0)
+        sinon.assert.notCalled(mockLogger.writeLog)
+        done()
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.processPartial()
+    })
+  })
+  describe('(partialFailed)', () => {
+    it('should call the logger and a false callback', (done) => {
+      ProcessIncoming.runtime = {
+        callback: (success, data) => {
+          expect(success).toBe(false)
+          sinon.assert.calledOnce(mockLogger.writeLog)
+          sinon.assert.calledWith(mockLogger.writeLog, 'PROI_009')
+          expect(data.message).toBeA('string')
+          done()
+        },
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.partialFailed()
     })
   })
   describe('(reEncryptAddress)', () => {
-    it('should log a message when the encryption fails', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-          test: true,
-        },
-        outgoingPubKey: {
-          encrypt: () => { return '12345' },
-        },
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
-      }
-      ProcessIncoming.runtime = mockRuntime
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.reEncryptAddress({ n: 'XYZ', t: 120 }, 'ABC', 0)
-      sinon.assert.calledOnce(mockLogger.writeLog)
-      sinon.assert.calledWith(mockLogger.writeLog, 'PROI_005')
-      done()
-    })
-    it('should log a message when the counter exceeds the limit', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-          test: true,
-        },
-        outgoingPubKey: {
-          encrypt: () => { return '00000000' },
-        },
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
-      }
-      ProcessIncoming.runtime = mockRuntime
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.reEncryptAddress({ n: 'XYZ', t: 120 }, 'ABC', 11)
-      sinon.assert.calledOnce(mockLogger.writeLog)
-      sinon.assert.calledWith(mockLogger.writeLog, 'PROI_006')
-      done()
-    })
-    it('should call makeSubchainTx when everything okay', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-          test: true,
-        },
-        outgoingPubKey: {
-          encrypt: () => {
-            return '12345678901234567890123456789012345678901234567890123456789012345678901234567890123456'
-                 + '789012345678901234567890123456789012345678901234567890123456789012345678901234567890==' },
-        },
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
-      }
-
-      ProcessIncoming.makeSubchainTx = (encrypted, transaction) => {
-        expect(encrypted).toBe(mockRuntime.outgoingPubKey.encrypt())
-        expect(transaction).toBe('ABC')
-        done()
-      }
-      ProcessIncoming.runtime = mockRuntime
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.reEncryptAddress({ n: 'XYZ', t: 120 }, 'ABC', 0)
-    })
-    it('should catch errors thrown by the encryption', (done) => {
-      const callback = () => {}
+    it('should log a message when the encryption fails by exception', (done) => {
       const Exception = () => 'manual error'
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-          test: true,
-        },
+      ProcessIncoming.runtime = {
         outgoingPubKey: {
           encrypt: () => {
             throw new Exception()
           },
         },
-        subAddresses: [],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: [],
+      }
+      ProcessIncoming.partialFailed = (transaction) => {
+        expect(transaction).toEqual({ txid: 'ABC', amount: 1000 })
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_007')
+        done()
+      }
+      const mockPrivateSettings = {
+        encryptionOutput: {
+          OUTGOING: 5,
+        },
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.__set__('privateSettings', mockPrivateSettings)
+      ProcessIncoming.reEncryptAddress('XYZ', 120, { txid: 'ABC', amount: 1000 }, 100, 0)
+    })
+    it('should log a message when the encryption is the wrong length', (done) => {
+      ProcessIncoming.runtime = {
+        outgoingPubKey: {
+          encrypt: () => { return '12345' },
+        },
+        currentBlockHeight: 1000,
+        settings: {
+          secret: 'ABCDEFG',
+        },
+      }
+      const mockPrivateSettings = {
+        encryptionOutput: {
+          OUTGOING: 177,
+        },
+        maxEncryptionAttempts: 10,
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.__set__('privateSettings', mockPrivateSettings)
+      ProcessIncoming.reEncryptAddress('XYZ', 120, { txid: 'ABC', amount: 1000 }, 100, 0)
+      sinon.assert.calledOnce(mockLogger.writeLog)
+      sinon.assert.calledWith(mockLogger.writeLog, 'PROI_005')
+      done()
+    })
+    it('should log a message when the max attempts is reached', (done) => {
+      ProcessIncoming.runtime = {
+        outgoingPubKey: {
+          encrypt: () => { return '12345' },
+        },
+        currentBlockHeight: 1000,
+        settings: {
+          secret: 'ABCDEFG',
+        },
+      }
+      const mockPrivateSettings = {
+        encryptionOutput: {
+          OUTGOING: 177,
+        },
+        maxEncryptionAttempts: 10,
+      }
+      ProcessIncoming.partialFailed = (transaction) => {
+        expect(transaction).toEqual({ txid: 'ABC', amount: 1000 })
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_006')
+        done()
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.__set__('privateSettings', mockPrivateSettings)
+      ProcessIncoming.reEncryptAddress('XYZ', 120, { txid: 'ABC', amount: 1000 }, 100, 10)
+    })
+    it('should call makeSubchainTx when everything okay', (done) => {
+      ProcessIncoming.runtime = {
+        outgoingPubKey: {
+          encrypt: () => {
+            return '12345678901234567890123456789012345678901234567890123456789012345678901234567890123456'
+                 + '789012345678901234567890123456789012345678901234567890123456789012345678901234567890==' },
+        },
+        currentBlockHeight: 1000,
+        settings: {
+          secret: 'ABCDEFG',
+        },
+      }
+      const mockPrivateSettings = {
+        encryptionOutput: {
+          OUTGOING: 172,
+        },
+        maxEncryptionAttempts: 0,
+      }
+      ProcessIncoming.makeSubchainTx = (encrypted, transaction) => {
+        expect(encrypted).toEqual(ProcessIncoming.runtime.outgoingPubKey.encrypt())
+        expect(transaction).toEqual({ txid: 'ABC', amount: 1000 })
+        done()
       }
 
-      ProcessIncoming.runtime = mockRuntime
       ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.reEncryptAddress({ n: 'XYZ', t: 120 }, 'ABC', 0)
-      sinon.assert.calledOnce(mockLogger.writeLog)
-      sinon.assert.calledWith(mockLogger.writeLog, 'PROI_007')
-      done()
-    })
-  })
-  describe('(sentSubToOutgoing)', () => {
-    it('should log a message out when success is false', (done) => {
-      const mockTransactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        done()
-      }
-      ProcessIncoming.transactionFailed = mockTransactionFailed
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.sentSubToOutgoing(false, { transaction: true, data: true })
-    })
-    it('should log a message out when no data is false', (done) => {
-      const mockTransactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        done()
-      }
-      ProcessIncoming.transactionFailed = mockTransactionFailed
-      ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.sentSubToOutgoing(true, { sendOutcome: false, data: true })
-    })
-    it('should remove data from subAddresses and remainingTransactions and add to successfulSubTransactions', (done) => {
-      const mockTransactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        done()
-      }
-      ProcessIncoming.transactionFailed = mockTransactionFailed
-      ProcessIncoming.__set__('Logger', mockLogger)
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
-        subClient: { test: true },
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-          test: true,
-        },
-        outgoingPubKey: {
-          encrypt: () => { return '00000000' },
-        },
-        subAddresses: ['1234'],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: ['1234'],
-      }
-      ProcessIncoming.runtime = mockRuntime
-      ProcessIncoming.sentSubToOutgoing(true, { sendOutcome: true, transaction: '1234' })
-      expect(mockRuntime.subAddresses.length).toBe(0)
-      expect(mockRuntime.remainingTransactions.length).toBe(0)
-      expect(mockRuntime.successfulSubTransactions.length).toBe(1)
-      done()
+      ProcessIncoming.__set__('privateSettings', mockPrivateSettings)
+      ProcessIncoming.reEncryptAddress('XYZ', 120, { txid: 'ABC', amount: 1000 }, 100, 10)
     })
   })
   describe('makeSubchainTx', () => {
     it('should call sendToAddress', (done) => {
-      const callback = () => {}
-      mockRuntime = {
-        callback,
-        currentBatch: [],
-        settings: { setting: true },
+      ProcessIncoming.runtime = {
         subClient: { test: true },
-        navClient: {
-          validateAddress: () => {
-            return Promise.reject({ message: 'mock failure' })
-          },
-          test: true,
-        },
-        outgoingPubKey: {
-          encrypt: () => { return '00000000' },
-        },
         subAddresses: ['1234'],
-        transactionsToReturn: [],
-        successfulSubTransactions: [],
-        remainingTransactions: ['1234'],
       }
-      ProcessIncoming.runtime = mockRuntime
+      const mockPrivateSettings = {
+        subCoinsPerTx: 1,
+      }
       const mockSendToAddress = {
-        send: sinon.spy(),
+        send: (options, callback) => {
+          expect(options.client).toEqual(ProcessIncoming.runtime.subClient)
+          expect(options.address).toBe('1234')
+          expect(options.amount).toBe(1)
+          expect(options.encrypted).toBe('ASD')
+          expect(options.transaction).toBe('ZXC')
+          expect(callback).toBe(ProcessIncoming.sentSubToOutgoing)
+          done()
+        },
       }
       ProcessIncoming.__set__('SendToAddress', mockSendToAddress)
       ProcessIncoming.__set__('Logger', mockLogger)
-      ProcessIncoming.makeSubchainTx('test', 'test')
-      sinon.assert.calledOnce(mockSendToAddress.send)
-      done()
+      ProcessIncoming.__set__('privateSettings', mockPrivateSettings)
+      ProcessIncoming.makeSubchainTx('ASD', 'ZXC')
+    })
+  })
+  describe('(sentSubToOutgoing)', () => {
+    it('should log a message out when success is false', (done) => {
+      ProcessIncoming.partialFailed = () => {
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_008')
+        done()
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.sentSubToOutgoing(false, { transaction: true, data: true })
+    })
+    it('should log a message out when no data is false', (done) => {
+      ProcessIncoming.partialFailed = () => {
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROI_008')
+        done()
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.sentSubToOutgoing(true, { sendOutcome: false, data: true })
+    })
+    it('should move on to the next partial transaction to send', (done) => {
+      ProcessIncoming.processPartial = () => {
+        expect(ProcessIncoming.runtime.subAddresses).toEqual(['2345', '3456'])
+        expect(ProcessIncoming.runtime.remainingFlattened).toEqual([1, 1.1234])
+        done()
+      }
+      ProcessIncoming.__set__('Logger', mockLogger)
+      ProcessIncoming.runtime = {
+        subAddresses: ['1234', '2345', '3456'],
+        remainingFlattened: [100, 1, 1.1234],
+      }
+      ProcessIncoming.sentSubToOutgoing(true, { sendOutcome: true, transaction: '1234' })
     })
   })
 })

@@ -236,7 +236,7 @@ const createSecret = (holdingSuccess) => {
 
   if (globalSettings.serverType === 'INCOMING') {
     bcrypt.hash(settings.secretOptions.salt, settings.secretOptions.saltRounds, (err, hash) => {
-      console.log('STATUS: genearted secret: ', hash.substring(0, 42))
+      console.log('STATUS: genearted secret: ', hash.substring(0, 32))
       console.log('SUCCESS: everything is configured')
     })
   } else {

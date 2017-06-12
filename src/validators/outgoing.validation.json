@@ -123,6 +123,6 @@
   "secret": {
     "required": true,
     "type": "STRING",
-    "length": 42
+    "length": 32
   }
 }

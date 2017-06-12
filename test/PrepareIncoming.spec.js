@@ -44,6 +44,7 @@ describe('[PrepareIncoming]', () => {
         navClient: mockClient,
         outgoingNavBalance: 50000,
         subBalance: 1000,
+        settings: { test: true },
       }, callback)
     })
   })
@@ -376,9 +377,15 @@ describe('[PrepareIncoming]', () => {
       const mockFlattenTransactions = {
         incoming: (options, callback) => {
           expect(options.amountToFlatten).toBe(100)
+          expect(options.anonFeePercent).toBe(0.5)
           expect(callback).toBe(PrepareIncoming.flattened)
           sinon.assert.notCalled(mockLogger.writeLog)
           done()
+        },
+      }
+      PrepareIncoming.runtime = {
+        settings: {
+          anonFeePercent: 0.5,
         },
       }
       PrepareIncoming.__set__('Logger', mockLogger)
