@@ -26,6 +26,39 @@ describe('[PrepareOutgoing]', () => {
       PrepareOutgoing.__set__('Logger', mockLogger)
       PrepareOutgoing.run({ junkParam: 1234 }, callback)
     })
+    it('should set the runtime variables and fail to get the blockHeight', (done) => {
+      const callback = () => {
+        expect(PrepareOutgoing.runtime.callback).toBe(callback)
+        expect(PrepareOutgoing.runtime.navClient).toBe(mockClient)
+        expect(PrepareOutgoing.runtime.subClient).toBe(mockClient)
+        expect(PrepareOutgoing.runtime.navBalance).toBe(50000)
+        expect(PrepareOutgoing.runtime.settings).toEqual({ test: 1 })
+        expect(PrepareOutgoing.runtime.failedSubTransactions).toEqual([])
+        expect(PrepareOutgoing.runtime.currentBatch).toEqual([])
+        expect(PrepareOutgoing.runtime.sumPending).toBe(0)
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PREPO_001A')
+        done()
+      }
+
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PrepareOutgoing.__set__('Logger', mockLogger)
+
+      const mockClient = {
+        getBlockCount: () => {
+          return Promise.reject({ code: -17 })
+        },
+      }
+
+      PrepareOutgoing.run({
+        navClient: mockClient,
+        subClient: mockClient,
+        navBalance: 50000,
+        settings: { test: 1 },
+      }, callback)
+    })
     it('should set the runtime variables and call getUnspent', (done) => {
       PrepareOutgoing.getUnspent = () => {
         expect(PrepareOutgoing.runtime.callback).toBe(callback)
@@ -41,8 +74,15 @@ describe('[PrepareOutgoing]', () => {
 
       const callback = () => {}
 
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PrepareOutgoing.__set__('Logger', mockLogger)
+
       const mockClient = {
-        getAccountAddress: () => { return Promise.reject({ code: -17 }) },
+        getBlockCount: () => {
+          return Promise.resolve(1000)
+        },
       }
 
       PrepareOutgoing.run({
@@ -365,9 +405,10 @@ describe('[PrepareOutgoing]', () => {
       }
       PrepareOutgoing.__set__('Logger', mockLogger)
       PrepareOutgoing.checkDecrypted(true, { transaction: 1, decrypted: {
-        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
-        n: 100000,
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 100000,
         s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
+        t: 100,
       } })
     })
     it('should get the encrypted data but the secret is wrong', (done) => {
@@ -387,16 +428,17 @@ describe('[PrepareOutgoing]', () => {
       }
       PrepareOutgoing.__set__('Logger', mockLogger)
       PrepareOutgoing.checkDecrypted(true, { transaction: 1, decrypted: {
-        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
-        n: 1000,
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 1000,
         s: 'XYZ',
       } })
     })
-    it('should get the encrypted data and proceed to test it', (done) => {
+    it('should get the encrypted data, set the time delay to 0 proceed to test it', (done) => {
       PrepareOutgoing.testDecrypted = (parsedDecrypted, parsedTransaction) => {
         sinon.assert.notCalled(mockLogger.writeLog)
         expect(parsedDecrypted).toBe(decrypted)
         expect(parsedTransaction).toBe(transaction)
+        expect(parsedDecrypted.t).toBe(0)
         done()
       }
       const mockLogger = {
@@ -409,9 +451,39 @@ describe('[PrepareOutgoing]', () => {
         },
       }
       const decrypted = {
-        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
-        n: 1000,
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 1000,
         s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
+      }
+      const transaction = {
+        to: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        amount: 100,
+      }
+      PrepareOutgoing.__set__('Logger', mockLogger)
+      PrepareOutgoing.checkDecrypted(true, { transaction, decrypted })
+    })
+    it('should get the encrypted data and proceed to test it', (done) => {
+      PrepareOutgoing.testDecrypted = (parsedDecrypted, parsedTransaction) => {
+        sinon.assert.notCalled(mockLogger.writeLog)
+        expect(parsedDecrypted).toBe(decrypted)
+        expect(parsedTransaction).toBe(transaction)
+        expect(parsedDecrypted.t).toBe(20)
+        done()
+      }
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PrepareOutgoing.runtime = {
+        settings: {
+          maxAmount: 10000,
+          secret: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
+        },
+      }
+      const decrypted = {
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 1000,
+        s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
+        t: 20,
       }
       const transaction = {
         to: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
@@ -479,6 +551,40 @@ describe('[PrepareOutgoing]', () => {
       PrepareOutgoing.__set__('Logger', mockLogger)
       PrepareOutgoing.testDecrypted(decrypted, transaction)
     })
+    it('should detect valid address but its not reached the required blockheight', (done) => {
+      PrepareOutgoing.processTransaction = () => {
+        sinon.assert.notCalled(mockLogger.writeLog)
+        expect(PrepareOutgoing.runtime.currentBatch).toEqual([])
+        expect(PrepareOutgoing.runtime.currentPending).toEqual([2, 3])
+        done()
+      }
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      const mockClient = {
+        validateAddress: () => { return Promise.resolve({ isvalid: true }) },
+      }
+      const decrypted = {
+        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        n: 1000,
+        s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
+        t: 10000,
+      }
+      const transaction = {
+        to: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        amount: 100,
+      }
+      PrepareOutgoing.runtime = {
+        navClient: mockClient,
+        navBalance: 50000,
+        sumPending: 0,
+        currentBatch: [],
+        currentPending: [1, 2, 3],
+        currentBlockHeight: 1000,
+      }
+      PrepareOutgoing.__set__('Logger', mockLogger)
+      PrepareOutgoing.testDecrypted(decrypted, transaction)
+    })
     it('should detect valid address and add it to the list', (done) => {
       PrepareOutgoing.processTransaction = () => {
         sinon.assert.notCalled(mockLogger.writeLog)
@@ -498,6 +604,7 @@ describe('[PrepareOutgoing]', () => {
         a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
         n: 1000,
         s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
+        t: 10000,
       }
       const transaction = {
         to: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
@@ -509,6 +616,7 @@ describe('[PrepareOutgoing]', () => {
         sumPending: 0,
         currentBatch: [],
         currentPending: [1, 2, 3],
+        currentBlockHeight: 10000,
       }
       PrepareOutgoing.__set__('Logger', mockLogger)
       PrepareOutgoing.testDecrypted(decrypted, transaction)

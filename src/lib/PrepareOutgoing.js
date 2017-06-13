@@ -27,7 +27,14 @@ PrepareOutgoing.run = (options, callback) => {
     currentBatch: [],
     sumPending: 0,
   }
-  PrepareOutgoing.getUnspent()
+  PrepareOutgoing.runtime.navClient.getBlockCount().then((blockHeight) => {
+    PrepareOutgoing.runtime.currentBlockHeight = blockHeight
+    PrepareOutgoing.getUnspent()
+  }).catch((err) => {
+    Logger.writeLog('PREPO_001A', 'failed to get the current blockheight', { error: err })
+    callback(false, { message: 'failed to get the current blockheight' })
+    return
+  })
 }
 
 PrepareOutgoing.getUnspent = () => {
@@ -87,12 +94,12 @@ PrepareOutgoing.checkDecrypted = (success, data) => {
     PrepareOutgoing.failedTransaction()
     return
   }
-  if (!data.decrypted.a || !data.decrypted.n || !data.decrypted.s) {
+  if (!data.decrypted.n || !data.decrypted.v || !data.decrypted.s) {
     Logger.writeLog('PREPO_005', 'transaction has invalid params', { success })
     PrepareOutgoing.failedTransaction()
     return
   }
-  if (parseFloat(data.decrypted.n) > PrepareOutgoing.runtime.settings.maxAmount) {
+  if (parseFloat(data.decrypted.v) > PrepareOutgoing.runtime.settings.maxAmount) {
     Logger.writeLog('PREPO_006', 'decrypted amount is larger than maxAmount', { success })
     PrepareOutgoing.failedTransaction()
     return
@@ -101,7 +108,10 @@ PrepareOutgoing.checkDecrypted = (success, data) => {
     Logger.writeLog('PREPO_007', 'secret mismatch', { success })
     PrepareOutgoing.failedTransaction()
   }
-  PrepareOutgoing.testDecrypted(data.decrypted, data.transaction)
+  const decrypted = data.decrypted
+  if (!decrypted.t) decrypted.t = 0
+
+  PrepareOutgoing.testDecrypted(decrypted, data.transaction)
 }
 
 PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
@@ -109,6 +119,13 @@ PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
     if (addressInfo.isvalid !== true) {
       Logger.writeLog('PREPO_008', 'recipient address is invalid', { transaction })
       PrepareOutgoing.failedTransaction()
+      return
+    }
+
+    if (decrypted.t > PrepareOutgoing.runtime.currentBlockHeight) {
+      // don't fail it, just move on to the next one
+      PrepareOutgoing.runtime.currentPending.splice(0, 1)
+      PrepareOutgoing.processTransaction()
       return
     }
 
