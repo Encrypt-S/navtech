@@ -59,6 +59,7 @@ GroupPartials.checkDecrypted = (success, data) => {
       p: data.decrypted.p,
       o: data.decrypted.o,
       u: data.decrypted.u,
+      data,
     })
     GroupPartials.partialFailed(data.transaction)
     return
