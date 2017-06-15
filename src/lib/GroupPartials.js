@@ -3,6 +3,7 @@ const lodash = require('lodash')
 let Logger = require('./Logger.js') // eslint-disable-line
 let EncryptedData = require('./EncryptedData.js') // eslint-disable-line
 
+let privateSettings = require('../settings/private.settings') //eslint-disable-line
 const GroupPartials = {}
 
 GroupPartials.run = (options, callback) => {
@@ -158,7 +159,7 @@ GroupPartials.checkPartials = () => {
       lodash.forEach(partial.transactions, (partialTx) => {
         console.log('forEach partial.transactions as partialTx', partialTx)
         const returnIndex = lodash.findIndex(GroupPartials.runtime.transactionsToReturn, (tx) => tx.txid === partialTx.txid)
-        if (returnIndex === -1 && partialTx.confirmations > 120) { // if its not already flagged as returning & too old
+        if (returnIndex === -1 && partialTx.confirmations > privateSettings.maxConfs) { // if its not already flagged as returning & too old
           GroupPartials.runtime.transactionsToReturn.push(partialTx)
         }
       })
