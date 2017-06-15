@@ -120,8 +120,15 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
 
 PrepareIncoming.unspentPruned = (success, data) => {
   if (!success || !data || !data.currentBatch || data.currentBatch.length < 1) {
+    if (!data.transactionsToReturn || data.transactionsToReturn.length < 1) {
+      Logger.writeLog('PREPI_003C', 'failed to prune unspent', { success, data })
+      PrepareIncoming.runtime.callback(false, {
+        pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+      })
+      return
+    }
     Logger.writeLog('PREPI_003C', 'failed to prune unspent', { success, data })
-    PrepareIncoming.runtime.callback(false, {
+    PrepareIncoming.runtime.callback(true, {
       pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
     })
     return

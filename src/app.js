@@ -324,6 +324,18 @@ const apiInit = () => {
       return
     }
 
+    if (globalSettings.serverType === 'INCOMING' && IncomingServer.paused
+       || globalSettings.serverType === 'OUTGOING' && OutgoingServer.paused) {
+      Logger.writeLog('APP_026A', 'this server is paused for manual recovery', { body: req.body })
+      NavtechApi.runtime.res.send(JSON.stringify({
+        status: 200,
+        type: 'FAIL',
+        code: 'APP_026A',
+        message: 'server is not accepting transactions',
+      }))
+      return
+    }
+
     NavtechApi.runtime.numAddresses = parseInt(NavtechApi.runtime.req.body.num_addresses, 10)
 
     if (globalSettings.serverType === 'INCOMING') {

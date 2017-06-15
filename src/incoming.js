@@ -134,12 +134,6 @@ IncomingServer.allPendingReturned = (success, data) => {
 
 IncomingServer.currentBatchPrepared = (success, data) => {
   if (!success || !data || ((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn)) {
-    console.log('IncomingServer.currentBatchPrepared', data)
-    console.log('((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn)',
-    ((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn))
-    console.log('(!data.currentBatch || !data.currentFlattened || !data.numFlattened)',
-    (!data.currentBatch || !data.currentFlattened || !data.numFlattened))
-    console.log('!data.pendingToReturn', !data.pendingToReturn)
     IncomingServer.processing = false
     return
   }
@@ -157,6 +151,10 @@ IncomingServer.currentBatchPrepared = (success, data) => {
     }, IncomingServer.pendingFailedReturned)
     return
   }
+  if (!IncomingServer.runtime.currentBatch || !IncomingServer.runtime.currentBatch.length === 0) {
+    IncomingServer.processing = false
+    return
+  }
   RetrieveSubchainAddresses.run({
     subClient: IncomingServer.subClient,
     chosenOutgoing: IncomingServer.runtime.chosenOutgoing,
@@ -171,6 +169,10 @@ IncomingServer.pendingFailedReturned = (success, data) => {
     ReturnAllToSenders.run({
       navClient: IncomingServer.navClient,
     }, IncomingServer.allPendingReturned)
+  }
+  if (!IncomingServer.runtime.currentBatch || !IncomingServer.runtime.currentBatch.length === 0) {
+    IncomingServer.processing = false
+    return
   }
   RetrieveSubchainAddresses.run({
     subClient: IncomingServer.subClient,
