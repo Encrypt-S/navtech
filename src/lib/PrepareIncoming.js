@@ -57,7 +57,6 @@ PrepareIncoming.unspentFiltered = (success, data) => {
     PrepareIncoming.runtime.callback(false, { message: 'no current pending to return' })
     return
   }
-  console.log('PrepareIncoming.unspentFiltered', data.currentPending)
   PrepareIncoming.runtime.currentPending = data.currentPending
   GroupPartials.run({
     currentPending: data.currentPending,
@@ -82,7 +81,6 @@ PrepareIncoming.partialsGrouped = (success, data) => {
     })
     return
   }
-  console.log('PrepareIncoming.partialsGrouped', data)
   PrepareIncoming.runtime.transactionsToReturn = data.transactionsToReturn ? data.transactionsToReturn : null
 
   PrepareIncoming.pruneUnspent({
@@ -124,6 +122,9 @@ PrepareIncoming.unspentPruned = (success, data) => {
   if (!success || !data || !data.currentBatch || data.currentBatch.length < 1) {
     Logger.writeLog('PREPI_003C', 'failed to prune unspent', { success, data })
     PrepareIncoming.runtime.callback(false, {
+      currentBatch: {},
+      currentFlattened: {},
+      numFlattened: 0,
       pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
     })
     return

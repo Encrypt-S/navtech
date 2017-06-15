@@ -142,6 +142,8 @@ IncomingServer.currentBatchPrepared = (success, data) => {
   IncomingServer.runtime.numFlattened = data.numFlattened
   IncomingServer.runtime.pendingToReturn = data.pendingToReturn
 
+  console.log('IncomingServer.currentBatchPrepared', data)
+
   if (IncomingServer.runtime.pendingToReturn && IncomingServer.runtime.pendingToReturn.length > 0) {
     Logger.writeLog('INC_011', 'failed to process some transactions', { success, data }, true)
     ReturnAllToSenders.fromList({

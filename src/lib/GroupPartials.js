@@ -154,10 +154,8 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
 
 GroupPartials.checkPartials = () => {
   lodash.forEach(GroupPartials.runtime.partials, (partial) => {
-    console.log('forEach runtime.partials as partial', partial)
     if (!partial.readyToProcess) {
       lodash.forEach(partial.transactions, (partialTx) => {
-        console.log('forEach partial.transactions as partialTx', partialTx)
         const returnIndex = lodash.findIndex(GroupPartials.runtime.transactionsToReturn, (tx) => tx.txid === partialTx.txid)
         if (returnIndex === -1 && partialTx.confirmations > privateSettings.maxConfs) { // if its not already flagged as returning & too old
           GroupPartials.runtime.transactionsToReturn.push(partialTx)
@@ -165,9 +163,6 @@ GroupPartials.checkPartials = () => {
       })
     }
   })
-
-  console.log('GroupPartials.runtime.readyToProcess', GroupPartials.runtime.readyToProcess)
-  console.log('GroupPartials.runtime.transactionsToReturn', GroupPartials.runtime.transactionsToReturn)
 
   GroupPartials.runtime.callback(true, {
     readyToProcess: GroupPartials.runtime.readyToProcess,
