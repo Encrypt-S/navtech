@@ -134,6 +134,7 @@ IncomingServer.allPendingReturned = (success, data) => {
 
 IncomingServer.currentBatchPrepared = (success, data) => {
   if (!success || !data || ((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn)) {
+    Logger.writeLog('INC_011D', 'prepareIncoming returned bad data', { success, data })
     IncomingServer.processing = false
     return
   }
@@ -152,6 +153,7 @@ IncomingServer.currentBatchPrepared = (success, data) => {
     return
   }
   if (!IncomingServer.runtime.currentBatch || !IncomingServer.runtime.currentBatch.length === 0) {
+    Logger.writeLog('INC_011B', 'no currentBatch to process', { currentBatch: IncomingServer.runtime.currentBatch })
     IncomingServer.processing = false
     return
   }
@@ -171,6 +173,7 @@ IncomingServer.pendingFailedReturned = (success, data) => {
     }, IncomingServer.allPendingReturned)
   }
   if (!IncomingServer.runtime.currentBatch || !IncomingServer.runtime.currentBatch.length === 0) {
+    Logger.writeLog('INC_011C', 'no currentBatch to process', { currentBatch: IncomingServer.runtime.currentBatch })
     IncomingServer.processing = false
     return
   }
