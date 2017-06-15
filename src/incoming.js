@@ -134,6 +134,12 @@ IncomingServer.allPendingReturned = (success, data) => {
 
 IncomingServer.currentBatchPrepared = (success, data) => {
   if (!success || !data || ((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn)) {
+    console.log('IncomingServer.currentBatchPrepared', data)
+    console.log('((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn)',
+    ((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn))
+    console.log('(!data.currentBatch || !data.currentFlattened || !data.numFlattened)',
+    (!data.currentBatch || !data.currentFlattened || !data.numFlattened))
+    console.log('!data.pendingToReturn', !data.pendingToReturn)
     IncomingServer.processing = false
     return
   }
@@ -142,7 +148,6 @@ IncomingServer.currentBatchPrepared = (success, data) => {
   IncomingServer.runtime.numFlattened = data.numFlattened
   IncomingServer.runtime.pendingToReturn = data.pendingToReturn
 
-  console.log('IncomingServer.currentBatchPrepared', data)
 
   if (IncomingServer.runtime.pendingToReturn && IncomingServer.runtime.pendingToReturn.length > 0) {
     Logger.writeLog('INC_011', 'failed to process some transactions', { success, data }, true)
