@@ -34,6 +34,7 @@ PrepareIncoming.run = (options, callback) => {
 
 PrepareIncoming.getUnspent = () => {
   PrepareIncoming.runtime.navClient.listUnspent().then((unspent) => {
+    console.log('PrepareIncoming.getUnspent', unspent)
     if (unspent.length < 1) {
       PrepareIncoming.runtime.callback(false, { message: 'no unspent transactions found' })
       return
@@ -57,6 +58,7 @@ PrepareIncoming.unspentFiltered = (success, data) => {
     PrepareIncoming.runtime.callback(false, { message: 'no current pending to return' })
     return
   }
+  console.log('PrepareIncoming.unspentFiltered', data.currentPending)
   PrepareIncoming.runtime.currentPending = data.currentPending
   GroupPartials.run({
     currentPending: data.currentPending,
