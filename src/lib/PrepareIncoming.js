@@ -114,20 +114,20 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
   if (hasPruned) {
     callback(true, { currentBatch, sumPending })
   } else {
-    callback(false, { message: 'no pruned' })
+    callback(true, { message: 'no pruned' })
   }
 }
 
 PrepareIncoming.unspentPruned = (success, data) => {
   if (!success || !data || !data.currentBatch || data.currentBatch.length < 1) {
-    if (!data.transactionsToReturn || data.transactionsToReturn.length < 1) {
-      Logger.writeLog('PREPI_003C', 'failed to prune unspent', { success, data })
+    if (!PrepareIncoming.runtime.transactionsToReturn || PrepareIncoming.runtime.transactionsToReturn < 1) {
+      Logger.writeLog('PREPI_003D', 'no pruned and none to return', { success, data })
       PrepareIncoming.runtime.callback(false, {
         pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
       })
       return
     }
-    Logger.writeLog('PREPI_003C', 'failed to prune unspent', { success, data })
+    Logger.writeLog('PREPI_003C', 'no pruned but some to return', { success, data })
     PrepareIncoming.runtime.callback(true, {
       pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
     })
