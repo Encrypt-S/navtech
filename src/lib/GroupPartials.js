@@ -66,8 +66,6 @@ GroupPartials.checkDecrypted = (success, data) => {
     return
   }
 
-  console.log('GroupPartials.checkDecrypted', data)
-
   GroupPartials.runtime.client.validateAddress(data.decrypted.n).then((addressInfo) => {
     if (addressInfo.isvalid !== true) {
       Logger.writeLog('GRP_003A', 'encrypted address invalid', { success, data })

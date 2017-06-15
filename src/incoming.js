@@ -133,7 +133,7 @@ IncomingServer.allPendingReturned = (success, data) => {
 }
 
 IncomingServer.currentBatchPrepared = (success, data) => {
-  if (!success || !data || !data.currentBatch || !data.currentFlattened || !data.numFlattened || !data.pendingToReturn) {
+  if (!success || !data || ((!data.currentBatch || !data.currentFlattened || !data.numFlattened) && !data.pendingToReturn)) {
     IncomingServer.processing = false
     return
   }
