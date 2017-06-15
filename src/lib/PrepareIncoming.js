@@ -34,7 +34,6 @@ PrepareIncoming.run = (options, callback) => {
 
 PrepareIncoming.getUnspent = () => {
   PrepareIncoming.runtime.navClient.listUnspent().then((unspent) => {
-    console.log('PrepareIncoming.getUnspent', unspent)
     if (unspent.length < 1) {
       PrepareIncoming.runtime.callback(false, { message: 'no unspent transactions found' })
       return
@@ -102,8 +101,6 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
     callback(false, { message: 'invalid params' })
     return
   }
-
-  console.log('PrepareIncoming.pruneUnspent', options)
   const currentBatch = []
   let hasPruned = false
   let sumPending = 0
