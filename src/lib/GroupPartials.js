@@ -165,7 +165,8 @@ GroupPartials.checkPartials = () => {
     }
   })
 
-  console.log('GroupPartials.runtime.partials', GroupPartials.runtime.partials)
+  console.log('GroupPartials.runtime.readyToProcess', GroupPartials.runtime.readyToProcess)
+  console.log('GroupPartials.runtime.transactionsToReturn', GroupPartials.runtime.transactionsToReturn)
 
   GroupPartials.runtime.callback(true, {
     readyToProcess: GroupPartials.runtime.readyToProcess,
