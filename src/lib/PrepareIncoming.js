@@ -81,6 +81,7 @@ PrepareIncoming.partialsGrouped = (success, data) => {
     })
     return
   }
+  console.log('PrepareIncoming.partialsGrouped', data)
   PrepareIncoming.runtime.transactionsToReturn = data.transactionsToReturn ? data.transactionsToReturn : null
 
   PrepareIncoming.pruneUnspent({
