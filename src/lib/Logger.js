@@ -4,10 +4,13 @@ const nodemailer = require('nodemailer')
 const config = require('config')
 
 let globalSettings = config.get('GLOBAL') // eslint-disable-line
-
 let settings = false
 if (globalSettings.serverType === 'INCOMING') settings = config.get('INCOMING')
 if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
+
+const privateSettings = require('../settings/private.settings')
+
+const version = privateSettings.version.major + '.' + privateSettings.version.minor + '.' + privateSettings.version.patch
 
 const emailAuth = encodeURIComponent(settings.smtp.user) + ':' + encodeURIComponent(settings.smtp.pass)
 
@@ -16,6 +19,13 @@ const Logger = {}
 Logger.transporter = nodemailer.createTransport('smtps://' + emailAuth + '@' + settings.smtp.server)  // eslint-disable-line
 
 // const emailCodes = ['INC_E01']
+
+const startDate = new Date()
+let startUpInfo = '\r\n'
+startUpInfo += 'Version: ' + version + '\r\n'
+startUpInfo += 'Date: ' + startDate + '\r\n'
+startUpInfo += '\r\n-----------------------------------------------------------\r\n'
+console.log(startUpInfo)
 
 Logger.writeLog = (errorCode, errorMessage, data, email) => {
   if (email) {
