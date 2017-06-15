@@ -99,6 +99,8 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
     callback(false, { message: 'invalid params' })
     return
   }
+
+  console.log('PrepareIncoming.pruneUnspent', options)
   const currentBatch = []
   let hasPruned = false
   let sumPending = 0
