@@ -132,7 +132,11 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
   GroupPartials.runtime.partials[decrypted.u].amount = safeTotal
   GroupPartials.runtime.partials[decrypted.u].partsSum += parseInt(decrypted.p, 10)
   GroupPartials.runtime.partials[decrypted.u].transactions[transaction.txid] = {
-    ...transaction,
+    txid: transaction.txid,
+    amount: transaction.amount,
+    confirmations: transaction.confirmations,
+    vout: transaction.vout,
+    vin: transaction.vin,
     part: decrypted.p,
   }
 
