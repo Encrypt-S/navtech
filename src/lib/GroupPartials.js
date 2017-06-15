@@ -135,6 +135,7 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
   GroupPartials.runtime.partials[decrypted.u].transactions[transaction.txid] = {
     txid: transaction.txid,
     amount: transaction.amount,
+    confirmations: transaction.confirmations,
     part: decrypted.p,
   }
 
