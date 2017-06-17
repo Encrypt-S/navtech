@@ -58,7 +58,7 @@ describe('[SelectOutgoing]', () => {
     })
   })
   describe('(pickServer)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SelectOutgoing = rewire('../src/lib/SelectOutgoing')
     })
     it('should fail when it runs out of remotes to try', (done) => {
@@ -100,7 +100,7 @@ describe('[SelectOutgoing]', () => {
     })
   })
   describe('(testOutgoing)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SelectOutgoing = rewire('../src/lib/SelectOutgoing')
     })
     it('should make the request to the server', (done) => {
@@ -130,7 +130,7 @@ describe('[SelectOutgoing]', () => {
     })
   })
   describe('(gotServerResponse)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SelectOutgoing = rewire('../src/lib/SelectOutgoing')
     })
     it('should fail due to error from the server and try the next one', (done) => {
@@ -184,7 +184,7 @@ describe('[SelectOutgoing]', () => {
     })
   })
   describe('(gotServerResponse)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SelectOutgoing = rewire('../src/lib/SelectOutgoing')
     })
     it('should fail due to non json response from the server', (done) => {

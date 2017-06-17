@@ -6,7 +6,7 @@ const lodash = require('lodash')
 let Logger = require('./Logger.js') //eslint-disable-line
 let NavCoin = require('./NavCoin.js') //eslint-disable-line
 
-const globalSettings = config.get('GLOBAL')
+let globalSettings = config.get('GLOBAL') //eslint-disable-line
 
 let settings = false
 if (globalSettings.serverType === 'INCOMING') settings = config.get('INCOMING')
@@ -95,6 +95,7 @@ SendRawTransaction.walletUnlocked = (success, data) => {
 }
 
 SendRawTransaction.sendRaw = (options, callback) => {
+  console.log(globalSettings)
   if (globalSettings.preventSend) {
     Logger.writeLog('RAW_TEST_001', 'preventSend triggered', { options })
     callback(true, { rawOutcome: 'dummy-tx-id' })

@@ -80,6 +80,34 @@ describe('[PayoutFee]', () => {
       }
       PayoutFee.send()
     })
+    it('should fail to get the current balance', (done) => {
+      const callback = (success, data) => {
+        expect(success).toBe(false)
+        expect(data.message).toBeA('string')
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PAY_002A')
+        done()
+      }
+      const mockClient = {
+        name: 'jeeves',
+        getBalance: () => { return Promise.reject({ err: { code: -21 } }) },
+      }
+      const mockSettings = {
+        navPoolAmount: 100,
+        txFeePayoutMin: 1,
+        anonTxFeeAddress: 'abc123',
+      }
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      PayoutFee.__set__('Logger', mockLogger)
+      PayoutFee.runtime = {
+        callback,
+        settings: mockSettings,
+        navClient: mockClient,
+      }
+      PayoutFee.send()
+    })
     it('should run sendtoaddress if all conditions met', (done) => {
       const SendToAddress = {
         send: (options, callback) => {

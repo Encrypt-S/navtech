@@ -94,7 +94,7 @@ describe('[PrepareOutgoing]', () => {
     })
   })
   describe('(getUnspent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareOutgoing = rewire('../src/lib/PrepareOutgoing')
     })
     it('should fail to list unspent', (done) => {
@@ -167,7 +167,7 @@ describe('[PrepareOutgoing]', () => {
     })
   })
   describe('(unspentFiltered)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareOutgoing = rewire('../src/lib/PrepareOutgoing')
     })
     it('should fail to filter the unspent', (done) => {
@@ -255,7 +255,7 @@ describe('[PrepareOutgoing]', () => {
     })
   })
   describe('(processTransaction)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareOutgoing = rewire('../src/lib/PrepareOutgoing')
     })
     it('should call getEncrypted on the next transaction to process', (done) => {
@@ -311,7 +311,7 @@ describe('[PrepareOutgoing]', () => {
     })
   })
   describe('(failedTransaction)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareOutgoing = rewire('../src/lib/PrepareOutgoing')
     })
     it('should successfully exit with no more to process', (done) => {
@@ -334,7 +334,7 @@ describe('[PrepareOutgoing]', () => {
     })
   })
   describe('(checkDecrypted)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareOutgoing = rewire('../src/lib/PrepareOutgoing')
     })
     it('should fail to get the encrypted data', (done) => {
@@ -494,7 +494,7 @@ describe('[PrepareOutgoing]', () => {
     })
   })
   describe('(testDecrypted)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareOutgoing = rewire('../src/lib/PrepareOutgoing')
     })
     it('should fail to try and validate the address', (done) => {

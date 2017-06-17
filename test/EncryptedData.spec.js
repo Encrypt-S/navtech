@@ -33,7 +33,7 @@ const ursaMock = {
   createPrivateKey: () => {
     return {
       decrypt: () => {
-        return 'DECRYPTED_MESSAGE'
+        return '{"n": "XYZ", "u": "1234", "p": "1", "o": "3", "t": 20}'
       },
     }
   },
@@ -89,7 +89,7 @@ describe('[EncryptedData]', () => {
     })
   })
   describe('(decryptData)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       EncryptedData = rewire('../src/lib/EncryptedData')
     })
     it('should fail on params', (done) => {
@@ -135,8 +135,9 @@ describe('[EncryptedData]', () => {
       EncryptedData.__set__('fs', fsMock)
       EncryptedData.__set__('ursa', ursaMock)
       const callback = (success, data) => {
+        console.log(success, data)
         expect(success).toBe(true)
-        expect(data.decrypted).toBe('DECRYPTED_MESSAGE')
+        expect(data.decrypted).toEqual({ n: 'XYZ', u: '1234', p: '1', o: '3', t: 20 })
         done()
       }
       EncryptedData.decryptData({ encryptedData: '1234' }, callback)

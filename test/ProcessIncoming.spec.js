@@ -94,7 +94,7 @@ describe('[ProcessIncoming]', () => {
         done()
       }
       ProcessIncoming.runtime = {
-        remainingTxGroups: [],
+        remainingTxGroups: {},
         successfulTxGroups: ['1234'],
         txGroupsToReturn: ['2345'],
         callback,

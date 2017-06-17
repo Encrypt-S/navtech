@@ -83,7 +83,7 @@ describe('[AddressGenerator]', () => {
     })
   })
   describe('(runKeypoolRefill)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       AddressGenerator = rewire('../src/lib/AddressGenerator')
     })
     it('should fail to refill the keypool', (done) => {
@@ -129,7 +129,7 @@ describe('[AddressGenerator]', () => {
     })
   })
   describe('(getAccountAddressesForGeneration)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       AddressGenerator = rewire('../src/lib/AddressGenerator')
     })
     it('fail client.getAddressesByAccount with error 12', (done) => {
@@ -217,7 +217,7 @@ describe('[AddressGenerator]', () => {
     })
   })
   describe('(generateNewAccountAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       AddressGenerator = rewire('../src/lib/AddressGenerator')
     })
     it('should fail client.getNewAddress with error 12', (done) => {

@@ -24,7 +24,7 @@ describe('[Logger]', () => {
     })
   })
   describe('(sendMail)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       Logger = rewire('../src/lib/Logger')
     })
     it('should call the mail transport function', (done) => {

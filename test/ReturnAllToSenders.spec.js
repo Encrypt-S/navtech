@@ -40,7 +40,7 @@ describe('[ReturnAllToSenders]', () => {
     })
   })
   describe('(fromList)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnAllToSenders = rewire('../src/lib/ReturnAllToSenders')
     })
     it('should fail on params', (done) => {
@@ -76,7 +76,7 @@ describe('[ReturnAllToSenders]', () => {
     })
   })
   describe('(getUnspent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnAllToSenders = rewire('../src/lib/ReturnAllToSenders')
     })
     it('should fail to get the unspent', (done) => {
@@ -141,7 +141,7 @@ describe('[ReturnAllToSenders]', () => {
     })
   })
   describe('(unspentFiltered)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnAllToSenders = rewire('../src/lib/ReturnAllToSenders')
     })
     it('should fail to filter the unspent (returned false)', (done) => {
@@ -220,7 +220,7 @@ describe('[ReturnAllToSenders]', () => {
     })
   })
   describe('(returnToSender)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnAllToSenders = rewire('../src/lib/ReturnAllToSenders')
     })
     it('should fail because the filtered wasnt an array', (done) => {
@@ -287,7 +287,7 @@ describe('[ReturnAllToSenders]', () => {
     })
   })
   describe('(returnToSender)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnAllToSenders = rewire('../src/lib/ReturnAllToSenders')
     })
     it('should log because it send returned false and skip the transaction', (done) => {

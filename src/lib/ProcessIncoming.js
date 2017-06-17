@@ -39,7 +39,7 @@ ProcessIncoming.run = (options, callback) => {
 }
 
 ProcessIncoming.processPending = () => {
-  if (ProcessIncoming.runtime.remainingTxGroups.length < 1) {
+  if (lodash.size(ProcessIncoming.runtime.remainingTxGroups) < 1) {
     ProcessIncoming.runtime.callback(true, {
       successfulTxGroups: ProcessIncoming.runtime.successfulTxGroups,
       txGroupsToReturn: ProcessIncoming.runtime.txGroupsToReturn,

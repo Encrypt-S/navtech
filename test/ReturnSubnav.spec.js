@@ -42,7 +42,7 @@ describe('[ReturnSubnav]', () => {
     })
   })
   describe('(sendToIncoming)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnSubnav = rewire('../src/lib/ReturnSubnav')
     })
     it('should call the callback when theres no transactions left', (done) => {
@@ -84,7 +84,7 @@ describe('[ReturnSubnav]', () => {
     })
   })
   describe('(sent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnSubnav = rewire('../src/lib/ReturnSubnav')
     })
     it('should fail because it couldnt return subnav (returned false)', (done) => {

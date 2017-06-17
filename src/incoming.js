@@ -2,6 +2,7 @@
 
 const Client = require('bitcoin-core')
 const config = require('config')
+const lodash = require('lodash')
 
 let EncryptionKeys = require('./lib/EncryptionKeys.js') //eslint-disable-line
 let Logger = require('./lib/Logger.js') //eslint-disable-line
@@ -143,7 +144,6 @@ IncomingServer.currentBatchPrepared = (success, data) => {
   IncomingServer.runtime.numFlattened = data.numFlattened
   IncomingServer.runtime.pendingToReturn = data.pendingToReturn
 
-
   if (IncomingServer.runtime.pendingToReturn && IncomingServer.runtime.pendingToReturn.length > 0) {
     Logger.writeLog('INC_011', 'failed to process some transactions', { success, data }, true)
     ReturnAllToSenders.fromList({
@@ -152,7 +152,8 @@ IncomingServer.currentBatchPrepared = (success, data) => {
     }, IncomingServer.pendingFailedReturned)
     return
   }
-  if (!IncomingServer.runtime.currentBatch || !IncomingServer.runtime.currentBatch.length === 0) {
+
+  if (!IncomingServer.runtime.currentBatch || lodash.size(IncomingServer.runtime.currentBatch) === 0) {
     Logger.writeLog('INC_011B', 'no currentBatch to process', { currentBatch: IncomingServer.runtime.currentBatch })
     IncomingServer.processing = false
     return
@@ -172,7 +173,7 @@ IncomingServer.pendingFailedReturned = (success, data) => {
       navClient: IncomingServer.navClient,
     }, IncomingServer.allPendingReturned)
   }
-  if (!IncomingServer.runtime.currentBatch || !IncomingServer.runtime.currentBatch.length === 0) {
+  if (!IncomingServer.runtime.currentBatch || lodash.size(IncomingServer.runtime.currentBatch) === 0) {
     Logger.writeLog('INC_011C', 'no currentBatch to process', { currentBatch: IncomingServer.runtime.currentBatch })
     IncomingServer.processing = false
     return

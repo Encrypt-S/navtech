@@ -92,7 +92,7 @@ describe('[RandomizeTransactions]', () => {
     })
   })
   describe('(chooseRandomAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RandomizeTransactions = rewire('../src/lib/RandomizeTransactions')
     })
     it('should fail on params', (done) => {

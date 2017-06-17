@@ -10,7 +10,7 @@ let OutgoingServer = rewire('../src/outgoing')
 
 describe('[OutgoingServer]', () => {
   describe('(init)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should start the daemons and call findKeysToRemove', (done) => {
@@ -37,6 +37,7 @@ describe('[OutgoingServer]', () => {
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
       OutgoingServer.__set__('EncryptionKeys', EncryptionKeys)
+      OutgoingServer.__set__('settings', settings)
       OutgoingServer.init()
       sinon.assert.calledOnce(mockLogger.writeLog)
       sinon.assert.calledWith(mockLogger.writeLog, 'OUT_000')
@@ -47,7 +48,7 @@ describe('[OutgoingServer]', () => {
     })
   })
   describe('(startProcessing)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should not proceed as the script is still processing', (done) => {
@@ -84,7 +85,7 @@ describe('[OutgoingServer]', () => {
     })
   })
   describe('(preFlightComplete)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should fail preflight and log error', (done) => {
@@ -125,7 +126,7 @@ describe('[OutgoingServer]', () => {
     })
   })
   describe('(currentBatchPrepared)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should fail to get the currentBatch with false success', (done) => {
@@ -185,7 +186,7 @@ describe('[OutgoingServer]', () => {
     })
   })
   describe('(transactionsProcessed)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should fail to get the process transactions with false success', (done) => {
@@ -224,9 +225,11 @@ describe('[OutgoingServer]', () => {
       OutgoingServer.__set__('PayoutFee', PayoutFee)
       OutgoingServer.transactionsProcessed(true, { successfulTransactions: [1, 2, 3], failedTransactions: [4, 5, 6] })
     })
-    it('should get the fail to send any transactions and pause', (done) => {
+    it('should fail to send any transactions and pause', (done) => {
       OutgoingServer.processing = true
       OutgoingServer.paused = false
+
+      OutgoingServer.runtime = {}
 
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
@@ -234,7 +237,7 @@ describe('[OutgoingServer]', () => {
 
       expect(OutgoingServer.processing).toBe(false)
       expect(OutgoingServer.paused).toBe(true)
-      expect(OutgoingServer.runtime.successfulTransactions).toEqual([1, 2, 3])
+      expect(OutgoingServer.runtime.successfulTransactions).toEqual(undefined)
       sinon.assert.calledOnce(mockLogger.writeLog)
       sinon.assert.calledWith(mockLogger.writeLog, 'OUT_005')
       done()
@@ -261,7 +264,7 @@ describe('[OutgoingServer]', () => {
     })
   })
   describe('(feePaid)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should continue to return the subnav if it failed to pay the fee', (done) => {
@@ -307,7 +310,7 @@ describe('[OutgoingServer]', () => {
     })
   })
   describe('(subnavReturned)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       OutgoingServer = rewire('../src/outgoing')
     })
     it('should fail to return the subnav and pause', (done) => {

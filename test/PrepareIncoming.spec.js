@@ -49,7 +49,7 @@ describe('[PrepareIncoming]', () => {
     })
   })
   describe('(getUnspent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareIncoming = rewire('../src/lib/PrepareIncoming')
     })
     it('should fail to list unspent', (done) => {
@@ -121,7 +121,7 @@ describe('[PrepareIncoming]', () => {
     })
   })
   describe('(unspentFiltered)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareIncoming = rewire('../src/lib/PrepareIncoming')
     })
     it('should fail to filter the unspent', (done) => {
@@ -217,7 +217,7 @@ describe('[PrepareIncoming]', () => {
     })
   })
   describe('(partialsGrouped)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareIncoming = rewire('../src/lib/PrepareIncoming')
     })
     it('should fail on success', (done) => {
@@ -318,7 +318,7 @@ describe('[PrepareIncoming]', () => {
     })
   })
   describe('(pruneUnspent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareIncoming = rewire('../src/lib/PrepareIncoming')
     })
     it('should fail on subBalance is not float', (done) => {
@@ -382,7 +382,7 @@ describe('[PrepareIncoming]', () => {
     })
     it('should fail to return any pruned', (done) => {
       const callback = (success, data) => {
-        expect(success).toBe(false)
+        expect(success).toBe(true)
         expect(data.message).toBeA('string')
         sinon.assert.notCalled(mockLogger.writeLog)
         done()
@@ -537,17 +537,18 @@ describe('[PrepareIncoming]', () => {
     })
   })
   describe('(unspentPruned)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareIncoming = rewire('../src/lib/PrepareIncoming')
     })
-    it('should fail with false success', (done) => {
+    it('should have pendingToReturn', (done) => {
       const mockLogger = {
         writeLog: sinon.spy(),
       }
       PrepareIncoming.__set__('Logger', mockLogger)
       PrepareIncoming.runtime = {
         callback: (success, data) => {
-          expect(success).toBe(false)
+          console.log(success, data)
+          expect(success).toBe(true)
           expect(data.pendingToReturn).toEqual(1234)
           sinon.assert.calledOnce(mockLogger.writeLog)
           done()
@@ -557,7 +558,7 @@ describe('[PrepareIncoming]', () => {
       PrepareIncoming.unspentPruned(
         false, {})
     })
-    it('should fail with no current batch', (done) => {
+    it('should fail with no current batch and no transactions to return', (done) => {
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -618,7 +619,7 @@ describe('[PrepareIncoming]', () => {
     })
   })
   describe('(flattened)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       PrepareIncoming = rewire('../src/lib/PrepareIncoming')
     })
     it('should fail with false success', (done) => {

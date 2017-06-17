@@ -10,7 +10,7 @@ let IncomingServer = rewire('../src/incoming')
 
 describe('[IncomingServer]', () => {
   describe('(init)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should start the daemons and call findKeysToRemove', (done) => {
@@ -46,7 +46,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(startProcessing)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should not proceed as the script is still processing', (done) => {
@@ -83,7 +83,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(preFlightComplete)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail preflight and log error', (done) => {
@@ -124,7 +124,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(holdingProcessed)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to process holding transactions', (done) => {
@@ -162,7 +162,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(outgoingSelected)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to select outgoing server', (done) => {
@@ -275,7 +275,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(allPendingReturned)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to return all pending and pause', (done) => {
@@ -306,7 +306,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(currentBatchPrepared)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to get the currentBatch with false success', (done) => {
@@ -317,7 +317,8 @@ describe('[IncomingServer]', () => {
 
       IncomingServer.currentBatchPrepared(false)
 
-      sinon.assert.notCalled(mockLogger.writeLog)
+      sinon.assert.calledOnce(mockLogger.writeLog)
+      sinon.assert.calledWith(mockLogger.writeLog, 'INC_011D')
       expect(IncomingServer.processing).toBe(false)
       expect(IncomingServer.paused).toBe(false)
       done()
@@ -332,7 +333,8 @@ describe('[IncomingServer]', () => {
         junkParam: true,
       })
 
-      sinon.assert.notCalled(mockLogger.writeLog)
+      sinon.assert.calledOnce(mockLogger.writeLog)
+      sinon.assert.calledWith(mockLogger.writeLog, 'INC_011D')
       expect(IncomingServer.processing).toBe(false)
       expect(IncomingServer.paused).toBe(false)
       done()
@@ -354,9 +356,9 @@ describe('[IncomingServer]', () => {
       IncomingServer.__set__('ReturnAllToSenders', ReturnAllToSenders)
 
       IncomingServer.currentBatchPrepared(true, {
-        currentBatch: {},
+        currentBatch: [{ unique: 1234, transactions: {} }, { unique: 5678, transactions: {} }],
         currentFlattened: {},
-        numFlattened: {},
+        numFlattened: 0,
         pendingToReturn: [{ txid: '1234', amount: 100 }, { txid: 'QWER', amount: 100 }],
       })
     })
@@ -382,15 +384,39 @@ describe('[IncomingServer]', () => {
       IncomingServer.__set__('RetrieveSubchainAddresses', RetrieveSubchainAddresses)
 
       IncomingServer.currentBatchPrepared(true, {
-        currentBatch: { ABC: { unique: 'ABC', amount: 30 }, XYZ: { unique: 'XYZ', amount: 200 } },
+        currentBatch: [{ unique: 'ABC', amount: 30 }, { unique: 'XYZ', amount: 200 }],
         currentFlattened: { ABC: [10, 10, 10], XYZ: [100, 100] },
         numFlattened: 5,
         pendingToReturn: [],
       })
     })
+    it('should get the currentBatch and have none to return or process', (done) => {
+      IncomingServer.subClient = { getInfo: () => true }
+      IncomingServer.runtime = {
+        chosenOutgoing: {
+          ipAddress: '10.10.10.1',
+        },
+      }
+      IncomingServer.processing = true
+      IncomingServer.paused = false
+      const mockLogger = { writeLog: sinon.spy() }
+      IncomingServer.__set__('Logger', mockLogger)
+
+      IncomingServer.currentBatchPrepared(true, {
+        currentBatch: [],
+        currentFlattened: {},
+        numFlattened: 0,
+        pendingToReturn: [],
+      })
+      sinon.assert.calledOnce(mockLogger.writeLog)
+      sinon.assert.calledWith(mockLogger.writeLog, 'INC_011B')
+      expect(IncomingServer.processing).toBe(false)
+      expect(IncomingServer.paused).toBe(false)
+      done()
+    })
   })
   describe('(pendingFailedReturned)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to return the pending that are marked as expired', (done) => {
@@ -414,6 +440,36 @@ describe('[IncomingServer]', () => {
       IncomingServer.__set__('ReturnAllToSenders', ReturnAllToSenders)
       IncomingServer.pendingFailedReturned(false)
     })
+    it('should have returned all expired to sender and have no currentBatch', done => {
+      IncomingServer.subClient = { getInfo: () => true }
+      IncomingServer.runtime = {
+        chosenOutgoing: {
+          ipAddress: '10.10.10.1',
+        },
+        numFlattened: 5,
+        currentBatch: [],
+      }
+      const RetrieveSubchainAddresses = {
+        run: (options, callback) => {
+          expect(callback).toBe(IncomingServer.retrievedSubchainAddresses)
+          expect(options.subClient).toBe(IncomingServer.subClient)
+          expect(options.numAddresses).toBe(5)
+          done()
+        },
+      }
+      IncomingServer.processing = true
+      IncomingServer.paused = false
+      const mockLogger = { writeLog: sinon.spy() }
+      IncomingServer.__set__('Logger', mockLogger)
+      IncomingServer.__set__('RetrieveSubchainAddresses', RetrieveSubchainAddresses)
+
+      IncomingServer.pendingFailedReturned(true, {})
+      sinon.assert.calledOnce(mockLogger.writeLog)
+      sinon.assert.calledWith(mockLogger.writeLog, 'INC_011C')
+      expect(IncomingServer.processing).toBe(false)
+      expect(IncomingServer.paused).toBe(false)
+      done()
+    })
     it('should have returned all expired to sender and get the subchain addresses', done => {
       IncomingServer.subClient = { getInfo: () => true }
       IncomingServer.runtime = {
@@ -421,6 +477,7 @@ describe('[IncomingServer]', () => {
           ipAddress: '10.10.10.1',
         },
         numFlattened: 5,
+        currentBatch: [{ unique: 1234 }],
       }
       const RetrieveSubchainAddresses = {
         run: (options, callback) => {
@@ -440,7 +497,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(retrievedSubchainAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to retrieve subchain addresses with success false', (done) => {
@@ -492,7 +549,7 @@ describe('[IncomingServer]', () => {
       IncomingServer.subClient = { getInfo: () => true }
       IncomingServer.navClient = { getInfo: () => true }
       IncomingServer.runtime = {
-        currentBatch: { ABC: { unique: 'ABC', amount: 30 }, XYZ: { unique: 'XYZ', amount: 200 } },
+        currentBatch: [{ unique: 'ABC', amount: 30 }, { unique: 'XYZ', amount: 200 }],
         currentFlattened: { ABC: [10, 10, 10], XYZ: [100, 100] },
         outgoingPubKey: 'ZXCV',
       }
@@ -520,7 +577,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(transactionsProcessed)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to process all transactions and return all to senders', (done) => {
@@ -650,7 +707,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(failedTransactionsReturned)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to return the failed to sender and continue to try to spend to holding', (done) => {
@@ -750,7 +807,7 @@ describe('[IncomingServer]', () => {
     })
   })
   describe('(spentToHolding)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       IncomingServer = rewire('../src/incoming')
     })
     it('should fail to spend the processed to holding and pause', (done) => {

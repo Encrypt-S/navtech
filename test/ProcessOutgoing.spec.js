@@ -52,7 +52,7 @@ describe('[ProcessOutgoing]', () => {
     })
   })
   describe('(processPending)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should run the callback when no more transactions are left to process', (done) => {
@@ -74,9 +74,37 @@ describe('[ProcessOutgoing]', () => {
       ProcessOutgoing.__set__('Logger', mockLogger)
       ProcessOutgoing.processPending()
     })
+    it('should run the SendToAddress.send when it has remaining transactions to process', (done) => {
+      ProcessOutgoing.runtime = {
+        remainingTransactions: [
+          { txid: 1234, decrypted: { n: 'ASDF', v: 333 } },
+          { txid: 5678, decrypted: { n: 'QWER', v: 222 } },
+        ],
+        successfulTransactions: [1, 2, 3],
+        failedTransactions: [4, 5, 6],
+        navClient: { getInfo: true },
+      }
+      const SendToAddress = {
+        send: (options, callback) => {
+          expect(callback).toBe(ProcessOutgoing.sentNav)
+          expect(options.client).toBe(ProcessOutgoing.runtime.navClient)
+          expect(options.address).toBe('ASDF')
+          expect(options.amount).toBe(333)
+          expect(options.transaction).toEqual({ txid: 1234, decrypted: { n: 'ASDF', v: 333 } })
+          done()
+        },
+      }
+
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      ProcessOutgoing.__set__('Logger', mockLogger)
+      ProcessOutgoing.__set__('SendToAddress', SendToAddress)
+      ProcessOutgoing.processPending()
+    })
   })
   describe('(transactionFailed)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should trim the failed transaction and move onto the next one', (done) => {
@@ -102,7 +130,7 @@ describe('[ProcessOutgoing]', () => {
     })
   })
   describe('(mockSend)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should pretend a successful send happened for testing purposes', (done) => {
@@ -147,7 +175,7 @@ describe('[ProcessOutgoing]', () => {
     })
   })
   describe('(sentNav)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should fail to send partial nav (returned false) and try the next one', (done) => {

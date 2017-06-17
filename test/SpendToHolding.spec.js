@@ -8,7 +8,7 @@ let SpendToHolding = rewire('../src/lib/SpendToHolding')
 
 describe('[SpendToHolding]', () => {
   describe('(send)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SpendToHolding = rewire('../src/lib/SpendToHolding')
     })
     it('should fail on params', (done) => {
@@ -55,7 +55,7 @@ describe('[SpendToHolding]', () => {
     })
   })
   describe('(createHoldingTransactions)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SpendToHolding = rewire('../src/lib/SpendToHolding')
     })
     it('should fail to get the random holding address', (done) => {
@@ -117,7 +117,7 @@ describe('[SpendToHolding]', () => {
     })
   })
   describe('(sentToHolding)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SpendToHolding = rewire('../src/lib/SpendToHolding')
     })
     it('should fail to spend to holding', (done) => {

@@ -8,7 +8,7 @@ let GroupPartials = rewire('../src/lib/GroupPartials')
 
 describe('[GroupPartials]', () => {
   describe('(run)', () => {
-    before(() => {
+    beforeEach(() => {
       GroupPartials = rewire('../src/lib/GroupPartials')
     })
     it('should fail on params', (done) => {
@@ -45,7 +45,7 @@ describe('[GroupPartials]', () => {
     })
   })
   describe('(getDecryptedData)', () => {
-    before(() => {
+    beforeEach(() => {
       GroupPartials = rewire('../src/lib/GroupPartials')
     })
     it('it should call checkPartials if there are no more to process', (done) => {
@@ -95,7 +95,7 @@ describe('[GroupPartials]', () => {
     })
   })
   describe('(checkDecrypted)', () => {
-    before(() => {
+    beforeEach(() => {
       GroupPartials = rewire('../src/lib/GroupPartials')
     })
     it('should move to the next transaction if decryption failed (returned false)', (done) => {
@@ -288,7 +288,7 @@ describe('[GroupPartials]', () => {
     })
   })
   describe('(groupPartials)', () => {
-    before(() => {
+    beforeEach(() => {
       GroupPartials = rewire('../src/lib/GroupPartials')
     })
     it('should reject the partial if the partial group is already marked as complete', (done) => {
@@ -394,8 +394,8 @@ describe('[GroupPartials]', () => {
         expect(GroupPartials.runtime.partials[12345].amount).toBe(200)
         expect(GroupPartials.runtime.partials[12345].partsSum).toBe(3)
         expect(GroupPartials.runtime.partials[12345].transactions).toEqual({
-          ABC: { txid: 'ABC', amount: 100, part: 1 },
-          DEF: { txid: 'DEF', amount: 100, part: 2 },
+          ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
+          DEF: { txid: 'DEF', amount: 100, part: 2, vout: 1, vin: 2, confirmations: 20 },
         })
         done()
       }
@@ -411,14 +411,14 @@ describe('[GroupPartials]', () => {
             partsSum: 1,
             amount: 100,
             transactions: {
-              ABC: { txid: 'ABC', amount: 100, part: 1 },
+              ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
             },
             readyToProcess: false,
           },
         },
       }
       const decrypted = { n: 'XYZ', t: 20, p: 2, o: 3, u: '12345' }
-      const transaction = { txid: 'DEF', amount: 100 }
+      const transaction = { txid: 'DEF', amount: 100, vout: 1, vin: 2, confirmations: 20 }
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -435,9 +435,9 @@ describe('[GroupPartials]', () => {
         expect(GroupPartials.runtime.partials[12345].amount).toBe(300)
         expect(GroupPartials.runtime.partials[12345].partsSum).toBe(6)
         expect(GroupPartials.runtime.partials[12345].transactions).toEqual({
-          ABC: { txid: 'ABC', amount: 100, part: 1 },
-          DEF: { txid: 'DEF', amount: 100, part: 2 },
-          GHI: { txid: 'GHI', amount: 100, part: 3 },
+          ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
+          DEF: { txid: 'DEF', amount: 100, part: 2, vout: 1, vin: 2, confirmations: 20 },
+          GHI: { txid: 'GHI', amount: 100, part: 3, vout: 1, vin: 2, confirmations: 20 },
         })
         expect(GroupPartials.runtime.partials[12345].readyToProcess).toBe(true)
         done()
@@ -455,15 +455,15 @@ describe('[GroupPartials]', () => {
             partsSum: 3,
             amount: 200,
             transactions: {
-              ABC: { txid: 'ABC', amount: 100, part: 1 },
-              DEF: { txid: 'DEF', amount: 100, part: 2 },
+              ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
+              DEF: { txid: 'DEF', amount: 100, part: 2, vout: 1, vin: 2, confirmations: 20 },
             },
             readyToProcess: false,
           },
         },
       }
       const decrypted = { n: 'XYZ', t: 20, p: 3, o: 3, u: '12345' }
-      const transaction = { txid: 'GHI', amount: 100 }
+      const transaction = { txid: 'GHI', amount: 100, vout: 1, vin: 2, confirmations: 20 }
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -472,20 +472,20 @@ describe('[GroupPartials]', () => {
     })
     it('if this unique has not been seen yet, it should create the obect', (done) => {
       const currentPending = [
-        { txid: 'ABC', amount: 100 },
-        { txid: 'DEF', amount: 100 },
-        { txid: 'GHI', amount: 100 },
+        { txid: 'ABC', amount: 100, vout: 1, vin: 2, confirmations: 20 },
+        { txid: 'DEF', amount: 100, vout: 1, vin: 2, confirmations: 20 },
+        { txid: 'GHI', amount: 100, vout: 1, vin: 2, confirmations: 20 },
       ]
       GroupPartials.getDecryptedData = () => {
         sinon.assert.notCalled(mockLogger.writeLog)
         expect(GroupPartials.runtime.remainingToDecrypt).toEqual([
-          { txid: 'DEF', amount: 100 },
-          { txid: 'GHI', amount: 100 },
+          { txid: 'DEF', amount: 100, vout: 1, vin: 2, confirmations: 20 },
+          { txid: 'GHI', amount: 100, vout: 1, vin: 2, confirmations: 20 },
         ])
         expect(GroupPartials.runtime.partials[12345].amount).toBe(100)
         expect(GroupPartials.runtime.partials[12345].partsSum).toBe(1)
         expect(GroupPartials.runtime.partials[12345].transactions).toEqual({
-          ABC: { txid: 'ABC', amount: 100, part: 1 },
+          ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
         })
         expect(GroupPartials.runtime.partials[12345].readyToProcess).toBe(false)
         done()
@@ -498,7 +498,7 @@ describe('[GroupPartials]', () => {
         },
       }
       const decrypted = { n: 'XYZ', t: 20, p: 1, o: 3, u: '12345' }
-      const transaction = { txid: 'ABC', amount: 100 }
+      const transaction = { txid: 'ABC', amount: 100, vout: 1, vin: 2, confirmations: 20 }
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -507,7 +507,7 @@ describe('[GroupPartials]', () => {
     })
     it('should complete even when in the wrong order', (done) => {
       const currentPending = [
-        { txid: 'GHI', amount: 100 },
+        { txid: 'GHI', amount: 100, vout: 1, vin: 2, confirmations: 20 },
       ]
       GroupPartials.getDecryptedData = () => {
         sinon.assert.notCalled(mockLogger.writeLog)
@@ -515,9 +515,9 @@ describe('[GroupPartials]', () => {
         expect(GroupPartials.runtime.partials[12345].amount).toBe(300)
         expect(GroupPartials.runtime.partials[12345].partsSum).toBe(6)
         expect(GroupPartials.runtime.partials[12345].transactions).toEqual({
-          ABC: { txid: 'ABC', amount: 100, part: 1 },
-          DEF: { txid: 'DEF', amount: 100, part: 3 },
-          GHI: { txid: 'GHI', amount: 100, part: 2 },
+          ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
+          DEF: { txid: 'DEF', amount: 100, part: 3, vout: 1, vin: 2, confirmations: 20 },
+          GHI: { txid: 'GHI', amount: 100, part: 2, vout: 1, vin: 2, confirmations: 20 },
         })
         expect(GroupPartials.runtime.partials[12345].readyToProcess).toBe(true)
         done()
@@ -535,15 +535,15 @@ describe('[GroupPartials]', () => {
             partsSum: 4,
             amount: 200,
             transactions: {
-              ABC: { txid: 'ABC', amount: 100, part: 1 },
-              DEF: { txid: 'DEF', amount: 100, part: 3 },
+              ABC: { txid: 'ABC', amount: 100, part: 1, vout: 1, vin: 2, confirmations: 20 },
+              DEF: { txid: 'DEF', amount: 100, part: 3, vout: 1, vin: 2, confirmations: 20 },
             },
             readyToProcess: false,
           },
         },
       }
       const decrypted = { n: 'XYZ', t: 20, p: 2, o: 3, u: '12345' }
-      const transaction = { txid: 'GHI', amount: 100 }
+      const transaction = { txid: 'GHI', amount: 100, vout: 1, vin: 2, confirmations: 20 }
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -552,7 +552,7 @@ describe('[GroupPartials]', () => {
     })
     it('should work with long unsafe amounts', (done) => {
       const currentPending = [
-        { txid: 'GHI', amount: 100.33333333 },
+        { txid: 'GHI', amount: 100.33333333, vout: 1, vin: 2, confirmations: 20 },
       ]
       GroupPartials.getDecryptedData = () => {
         sinon.assert.notCalled(mockLogger.writeLog)
@@ -560,9 +560,9 @@ describe('[GroupPartials]', () => {
         expect(GroupPartials.runtime.partials[12345].amount).toBe(300.66666666)
         expect(GroupPartials.runtime.partials[12345].partsSum).toBe(6)
         expect(GroupPartials.runtime.partials[12345].transactions).toEqual({
-          ABC: { txid: 'ABC', amount: 100.33333333, part: 1 },
-          DEF: { txid: 'DEF', amount: 100, part: 3 },
-          GHI: { txid: 'GHI', amount: 100.33333333, part: 2 },
+          ABC: { txid: 'ABC', amount: 100.33333333, part: 1, vout: 1, vin: 2, confirmations: 20 },
+          DEF: { txid: 'DEF', amount: 100, part: 3, vout: 1, vin: 2, confirmations: 20 },
+          GHI: { txid: 'GHI', amount: 100.33333333, part: 2, vout: 1, vin: 2, confirmations: 20 },
         })
         expect(GroupPartials.runtime.partials[12345].readyToProcess).toBe(true)
         done()
@@ -580,15 +580,15 @@ describe('[GroupPartials]', () => {
             partsSum: 4,
             amount: 200.33333333,
             transactions: {
-              ABC: { txid: 'ABC', amount: 100.33333333, part: 1 },
-              DEF: { txid: 'DEF', amount: 100, part: 3 },
+              ABC: { txid: 'ABC', amount: 100.33333333, part: 1, vout: 1, vin: 2, confirmations: 20 },
+              DEF: { txid: 'DEF', amount: 100, part: 3, vout: 1, vin: 2, confirmations: 20 },
             },
             readyToProcess: false,
           },
         },
       }
       const decrypted = { n: 'XYZ', t: 20, p: 2, o: 3, u: '12345' }
-      const transaction = { txid: 'GHI', amount: 100.33333333 }
+      const transaction = { txid: 'GHI', amount: 100.33333333, vout: 1, vin: 2, confirmations: 20 }
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -597,7 +597,7 @@ describe('[GroupPartials]', () => {
     })
   })
   describe('(partialFailed)', () => {
-    before(() => {
+    beforeEach(() => {
       GroupPartials = rewire('../src/lib/GroupPartials')
     })
     it('should add the transaction to the return list and move on', (done) => {
@@ -640,7 +640,7 @@ describe('[GroupPartials]', () => {
     })
   })
   describe('(checkPartials)', () => {
-    before(() => {
+    beforeEach(() => {
       GroupPartials = rewire('../src/lib/GroupPartials')
     })
     it('should have no partials ready to process', (done) => {
