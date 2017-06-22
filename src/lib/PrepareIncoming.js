@@ -163,6 +163,7 @@ PrepareIncoming.flattened = (success, data) => {
   }
 
   if (PrepareIncoming.runtime.numFlattened + data.flattened.length >= privateSettings.maxAddresses) {
+    console.log('num > maxAddresses', PrepareIncoming.runtime.currentBatch)
     PrepareIncoming.runtime.callback(true, {
       currentBatch: PrepareIncoming.runtime.currentBatch,
       currentFlattened: PrepareIncoming.runtime.currentFlattened,
@@ -177,6 +178,7 @@ PrepareIncoming.flattened = (success, data) => {
   PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
 
   if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
+    console.log('remaining == 0', PrepareIncoming.runtime.currentBatch)
     PrepareIncoming.runtime.callback(true, {
       currentBatch: PrepareIncoming.runtime.currentBatch,
       currentFlattened: PrepareIncoming.runtime.currentFlattened,
