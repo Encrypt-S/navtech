@@ -95,7 +95,6 @@ SendRawTransaction.walletUnlocked = (success, data) => {
 }
 
 SendRawTransaction.sendRaw = (options, callback) => {
-  console.log(globalSettings)
   if (globalSettings.preventSend) {
     Logger.writeLog('RAW_TEST_001', 'preventSend triggered', { options })
     callback(true, { rawOutcome: 'dummy-tx-id' })
