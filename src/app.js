@@ -465,7 +465,7 @@ const apiInit = () => {
           highestConf = pending.confirmations
         }
       }
-      if (highestConf > 60) {
+      if (highestConf > privateSettings.maxQueue) {
         Logger.writeLog('APP_030B', 'the queue is too long', { highestConf }, true)
         NavtechApi.runtime.res.send(JSON.stringify({
           status: 200,
