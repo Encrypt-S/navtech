@@ -251,14 +251,13 @@ IncomingServer.failedTransactionsReturned = (success, data) => {
     IncomingServer.paused = true
     Logger.writeLog('INC_012', 'failed to return failed transactions to sender', { success, data }, true)
   }
-  console.log('INC_TEST_003', IncomingServer.runtime.successfulTxGroups)
   IncomingServer.runtime.successfulSubTransactions = []
   // extract the relevant transactions to return from the txGroupsToReturn
   for (let i = 0; i < IncomingServer.runtime.successfulTxGroups.length; i++) {
     const txGroup = IncomingServer.runtime.successfulTxGroups[i]
-    for (let j = 0; j < txGroup.transactions.length; j++) {
-      IncomingServer.runtime.successfulSubTransactions.push(txGroup.transactions[j])
-    }
+    lodash.forEach(txGroup.transactions, (transaction) => {
+      IncomingServer.runtime.successfulSubTransactions.push(transaction)
+    })
   }
 
   SpendToHolding.run({
