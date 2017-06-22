@@ -11,7 +11,7 @@ FlattenTransactions.incoming = (options, callback) => {
     callback(false, { message: 'invalid options provided to FlattenTransactions.incoming' })
     return
   }
-  const unsafeAmount = options.amountToFlatten - (options.amountToFlatten * options.anonFeePercent / 100)
+  const unsafeAmount = options.amountToFlatten / (1 + (options.anonFeePercent / 100))
   FlattenTransactions.runtime = {
     callback,
     amountToFlatten: FlattenTransactions.satoshiParser(unsafeAmount),
