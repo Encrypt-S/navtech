@@ -139,6 +139,8 @@ IncomingServer.currentBatchPrepared = (success, data) => {
     IncomingServer.processing = false
     return
   }
+  console.log('INC_TEST_001', data)
+
   IncomingServer.runtime.currentBatch = data.currentBatch
   IncomingServer.runtime.currentFlattened = data.currentFlattened
   IncomingServer.runtime.numFlattened = data.numFlattened
