@@ -115,7 +115,7 @@ PrepareOutgoing.checkDecrypted = (success, data) => {
 }
 
 PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
-  PrepareOutgoing.runtime.navClient.validateAddress(decrypted.a).then((addressInfo) => {
+  PrepareOutgoing.runtime.navClient.validateAddress(decrypted.n).then((addressInfo) => {
     if (addressInfo.isvalid !== true) {
       Logger.writeLog('PREPO_008', 'recipient address is invalid', { transaction })
       PrepareOutgoing.failedTransaction()
