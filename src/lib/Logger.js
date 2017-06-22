@@ -29,7 +29,8 @@ console.log(startUpInfo)
 
 Logger.writeLog = (errorCode, errorMessage, data, email) => {
   if (email) {
-    Logger.sendMail(errorCode, errorMessage, data)
+    // @TODO reenable mail
+    // Logger.sendMail(errorCode, errorMessage, data)
   }
   const date = new Date()
   let logString = '\r\n'
