@@ -87,7 +87,7 @@ OutgoingServer.currentBatchPrepared = (success, data) => {
     return
   }
 
-  if (data.failedSubTransactions) {
+  if (data.failedSubTransactions && data.failedSubTransactions.length > 0) {
     Logger.writeLog('OUT_003A', 'failed to prepare some subtransactions', { success, data }, true)
   }
 
@@ -116,7 +116,7 @@ OutgoingServer.transactionsProcessed = (success, data) => {
     return
   }
 
-  if (data.failedTransactions) {
+  if (data.failedTransactions && data.failedTransactions.length > 0) {
     Logger.writeLog('OUT_005A', 'failed to send send some transactions', { success, data }, true)
   }
 
