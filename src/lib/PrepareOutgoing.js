@@ -124,6 +124,7 @@ PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
 
     if (decrypted.t > PrepareOutgoing.runtime.currentBlockHeight) {
       // don't fail it, just move on to the next one
+      console.log('PREPO_TEST_001', decrypted.t, PrepareOutgoing.runtime.currentBlockHeight)
       PrepareOutgoing.runtime.currentPending.splice(0, 1)
       PrepareOutgoing.processTransaction()
       return
