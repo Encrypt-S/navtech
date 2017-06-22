@@ -87,6 +87,8 @@ OutgoingServer.currentBatchPrepared = (success, data) => {
     return
   }
 
+  console.log('OUT_TEST_001', data)
+
   if (data.failedSubTransactions && data.failedSubTransactions.length > 0) {
     Logger.writeLog('OUT_003A', 'failed to prepare some subtransactions', { success, data }, true)
   }
