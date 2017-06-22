@@ -138,6 +138,24 @@ describe('[FlattenTransactions]', () => {
         anonFeePercent: 0.5,
       }, callback)
     })
+    it('should flatten transactions 51', (done) => {
+      const amount = 51
+      const callback = (success, data) => {
+        expect(success).toBe(true)
+        expect(data.flattened.length).toBe(5)
+        expect(data.flattened[0]).toBe(10)
+        expect(data.flattened[4]).toBe(10.745)
+        const reduced = data.flattened.reduce((acc, x) => x + acc)
+        const safeReduced = Math.round(reduced * 100000000) / 100000000
+        const safeExpected = Math.round((amount * 0.995) * 100000000) / 100000000
+        expect(safeReduced).toBe(safeExpected)
+        done()
+      }
+      FlattenTransactions.incoming({
+        amountToFlatten: amount,
+        anonFeePercent: 0.5,
+      }, callback)
+    })
     it('should fail to flatten', (done) => {
       const callback = (success) => {
         expect(success).toBe(false)

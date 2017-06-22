@@ -73,7 +73,7 @@ PrepareIncoming.partialsGrouped = (success, data) => {
     })
   }
 
-  Logger.writeLog('PREPI_TEST_001', 'debug data', { data })
+  console.log('PREPI_TEST_001', 'debug data', { data })
 
   if (!data.readyToProcess) {
     Logger.writeLog('PREPI_003AA', 'GroupPartials failed to return correct data', { data })
