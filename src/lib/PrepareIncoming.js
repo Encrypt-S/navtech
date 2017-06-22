@@ -136,8 +136,8 @@ PrepareIncoming.unspentPruned = (success, data) => {
     })
     return
   }
-  PrepareIncoming.runtime.remainingToFlatten = data.currentBatch
-  PrepareIncoming.runtime.currentBatch = data.currentBatch
+  PrepareIncoming.runtime.remainingToFlatten = data.currentBatch.slice(0)
+  PrepareIncoming.runtime.currentBatch = data.currentBatch.slice(0)
   FlattenTransactions.incoming({
     amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
     anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
