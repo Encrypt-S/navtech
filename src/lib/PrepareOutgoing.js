@@ -134,9 +134,12 @@ PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
       PrepareOutgoing.runtime.sumPending = PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.n)
       PrepareOutgoing.runtime.currentBatch.push({ decrypted, transaction })
       PrepareOutgoing.runtime.currentPending.splice(0, 1)
+      console.log('PREPO_TEST_002', PrepareOutgoing.runtime.currentBatch)
       PrepareOutgoing.processTransaction()
       return
     }
+    console.log('PREPO_TEST_003', 'MAX REACHED')
+
     // max possible nav to send reached
     // @TODO possibly continue to loop through the rest of the transactions to see if any smaller ones can jump ahead
     PrepareOutgoing.runtime.callback(true, {
