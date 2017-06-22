@@ -54,6 +54,8 @@ SpendToHolding.createHoldingTransactions = (success, data) => {
   const outgoingTransactions = {}
   outgoingTransactions[data.pickedAddresses[0]] = sumPending
 
+  console.log('STH_TEST_001', outgoingTransactions, spentTransactions, SpendToHolding.runtime.holdingEncrypted)
+
   SendRawTransaction.createRaw({
     outgoingTransactions,
     spentTransactions,
