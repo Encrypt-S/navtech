@@ -130,8 +130,8 @@ PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
       return
     }
 
-    if (PrepareOutgoing.runtime.navBalance > PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.n)) {
-      PrepareOutgoing.runtime.sumPending = PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.n)
+    if (PrepareOutgoing.runtime.navBalance > PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.v)) {
+      PrepareOutgoing.runtime.sumPending = PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.v)
       PrepareOutgoing.runtime.currentBatch.push({ decrypted, transaction })
       PrepareOutgoing.runtime.currentPending.splice(0, 1)
       console.log('PREPO_TEST_002', PrepareOutgoing.runtime.currentBatch)
