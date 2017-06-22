@@ -56,6 +56,9 @@ SpendToHolding.createHoldingTransactions = (success, data) => {
 
   console.log('STH_TEST_001', outgoingTransactions, spentTransactions, SpendToHolding.runtime.holdingEncrypted)
 
+  console.log('STH_TEST_002', SpendToHolding.runtime)
+
+
   SendRawTransaction.createRaw({
     outgoingTransactions,
     spentTransactions,
