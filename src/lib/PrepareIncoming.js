@@ -156,8 +156,19 @@ PrepareIncoming.flattened = (success, data) => {
     // if it fails, move onto the next transaction
     // this will get rejected after the block timeout if it continually fails
     PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
+    if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
+      console.log('!success && remaining == 0', PrepareIncoming.runtime.currentBatch)
+      PrepareIncoming.runtime.callback(true, {
+        currentBatch: PrepareIncoming.runtime.currentBatch,
+        currentFlattened: PrepareIncoming.runtime.currentFlattened,
+        numFlattened: PrepareIncoming.runtime.numFlattened,
+        pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+      })
+      return
+    }
     FlattenTransactions.incoming({
       amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+      anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
     }, PrepareIncoming.flattened)
     return
   }
@@ -190,6 +201,7 @@ PrepareIncoming.flattened = (success, data) => {
 
   FlattenTransactions.incoming({
     amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+    anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
   }, PrepareIncoming.flattened)
 }
 
