@@ -82,15 +82,12 @@ OutgoingServer.preFlightComplete = (success, data) => {
 }
 
 OutgoingServer.currentBatchPrepared = (success, data) => {
-  if (!success) {
+  if (!success || !data || !data.currentBatch || data.currentBatch.length === 0) {
+    if (data.failedSubTransactions && data.failedSubTransactions.length > 0) {
+      Logger.writeLog('OUT_003A', 'failed to prepare some subtransactions', { success, data }, true)
+    }
     OutgoingServer.processing = false
     return
-  }
-
-  console.log('OUT_TEST_001', data)
-
-  if (data.failedSubTransactions && data.failedSubTransactions.length > 0) {
-    Logger.writeLog('OUT_003A', 'failed to prepare some subtransactions', { success, data }, true)
   }
 
   OutgoingServer.runtime.failedSubTransactions = data.failedSubTransactions
