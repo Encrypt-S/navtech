@@ -138,13 +138,8 @@ PrepareIncoming.unspentPruned = (success, data) => {
   }
   PrepareIncoming.runtime.remainingToFlatten = data.currentBatch.slice(0)
   PrepareIncoming.runtime.currentBatch = data.currentBatch.slice(0)
-  const satoshiReduced = PrepareIncoming.runtime.remainingToFlatten[0].amountsSatoshi.reduce((acc, x) => x + acc)
-  console.log('satoshiReduced', satoshiReduced)
-  const safeReduced = satoshiReduced / 100000000
-  console.log('safeReduced', safeReduced)
-  console.log('amount', PrepareIncoming.runtime.remainingToFlatten[0].amount)
   FlattenTransactions.incoming({
-    amountToFlatten: safeReduced,
+    amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
     anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
   }, PrepareIncoming.flattened)
   return
