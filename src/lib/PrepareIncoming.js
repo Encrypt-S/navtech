@@ -141,8 +141,8 @@ PrepareIncoming.unspentPruned = (success, data) => {
   const reduced = PrepareIncoming.runtime.remainingToFlatten[0].amounts.reduce((acc, x) => x + acc)
   console.log('reduced', reduced)
   const safeReduced = Math.round(reduced * 100000000) / 100000000
-  console.loge('safeReduced', safeReduced)
-  console.loge('amount', PrepareIncoming.runtime.remainingToFlatten[0].amount)
+  console.log('safeReduced', safeReduced)
+  console.log('amount', PrepareIncoming.runtime.remainingToFlatten[0].amount)
   FlattenTransactions.incoming({
     amountToFlatten: safeReduced,
     anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
