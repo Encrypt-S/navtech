@@ -113,7 +113,7 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
       currentBatch.push(txGroup)
     }
   })
-  console.log('currentBatch', currentBatch, options)
+  // console.log('TEST_currentBatch', currentBatch, options)
   if (hasPruned) {
     callback(true, { currentBatch, sumPending })
   } else {

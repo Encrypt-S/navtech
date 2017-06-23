@@ -245,7 +245,7 @@ const apiInit = () => {
       }))
       return
     }
-    Logger.writeLog('APP_TEST_001', 'success get-addresses', { data })
+    // Logger.writeLog('APP_TEST_001', 'success get-addresses', { data })
     NavtechApi.runtime.res.send(JSON.stringify({
       status: 200,
       type: 'SUCCESS',
@@ -584,10 +584,10 @@ const apiInit = () => {
 
     returnData.nav_addresses = NavtechApi.runtime.navAddresses
 
-    Logger.writeLog('APP_TEST_002', 'success check-node', {
-      returnData,
-      request: NavtechApi.runtime.req.body,
-    })
+    // Logger.writeLog('APP_TEST_002', 'success check-node', {
+    //   returnData,
+    //   request: NavtechApi.runtime.req.body,
+    // })
 
     NavtechApi.runtime.res.send(JSON.stringify({
       status: 200,
