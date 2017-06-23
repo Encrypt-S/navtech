@@ -126,8 +126,12 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
     return
   }
 
-  const unsafeTotal = GroupPartials.runtime.partials[decrypted.u].amount += transaction.amount
-  const safeTotal = Math.round(unsafeTotal * 100000000) / 100000000
+  // @TODO investigate rounding error
+
+  const satoshiAmount = Math.round(GroupPartials.runtime.partials[decrypted.u].amount * 100000000)
+  const satoshiPartialAmount = Math.round(transaction.amount * 100000000)
+
+  const safeTotal = (satoshiAmount + satoshiPartialAmount) / 100000000
 
   GroupPartials.runtime.partials[decrypted.u].amount = safeTotal
   GroupPartials.runtime.partials[decrypted.u].partsSum += parseInt(decrypted.p, 10)
