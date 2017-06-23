@@ -89,7 +89,7 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
       parts: parseInt(decrypted.o, 10),
       partsSum: 0,
       amount: 0,
-      amounts: [],
+      amountsSatoshi: [],
       transactions: {},
       readyToProcess: false,
     }
@@ -134,7 +134,7 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
 
   const safeTotal = (satoshiAmount + satoshiPartialAmount) / 100000000
 
-  GroupPartials.runtime.partials[decrypted.u].amounts.push(transaction.amount)
+  GroupPartials.runtime.partials[decrypted.u].amountsSatoshi.push(satoshiPartialAmount)
   GroupPartials.runtime.partials[decrypted.u].amount = safeTotal
   GroupPartials.runtime.partials[decrypted.u].partsSum += parseInt(decrypted.p, 10)
   GroupPartials.runtime.partials[decrypted.u].transactions[transaction.txid] = {
