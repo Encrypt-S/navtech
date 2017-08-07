@@ -43,7 +43,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(getSubAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should build the request and send it to the outgoing server', (done) => {
@@ -94,7 +94,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     RetrieveSubchainAddresses.getSubAddresses()
   })
   describe('(requestResponse)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should get an error from the outgoing server', (done) => {
@@ -139,7 +139,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(checkOutgoingCanTransact)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should get a non json response from the server and call false callback', (done) => {
@@ -242,7 +242,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(checkSubAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should fail because 0 addresses received from server', (done) => {
@@ -298,7 +298,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(subAddressesValid)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should fail from error within the address validator', (done) => {

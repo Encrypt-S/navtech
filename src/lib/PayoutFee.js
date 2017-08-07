@@ -42,6 +42,10 @@ PayoutFee.send = () => {
       address: PayoutFee.runtime.settings.anonTxFeeAddress,
       amount: txFeeAccrued,
     }, PayoutFee.sent)
+  }).catch((err) => {
+    Logger.writeLog('PAY_002A', 'error getting balance', { error: err })
+    PayoutFee.runtime.callback(false, { message: 'error getting balance' })
+    return
   })
 }
 

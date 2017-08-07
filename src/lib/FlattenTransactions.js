@@ -11,7 +11,7 @@ FlattenTransactions.incoming = (options, callback) => {
     callback(false, { message: 'invalid options provided to FlattenTransactions.incoming' })
     return
   }
-  const unsafeAmount = options.amountToFlatten - (options.amountToFlatten * options.anonFeePercent / 100)
+  const unsafeAmount = options.amountToFlatten / (1 + (options.anonFeePercent / 100))
   FlattenTransactions.runtime = {
     callback,
     amountToFlatten: FlattenTransactions.satoshiParser(unsafeAmount),
@@ -32,7 +32,7 @@ FlattenTransactions.flattenIncoming = () => {
     const factor = 1 * Math.pow(10, totalIntString.length - (i + 1))
     const numFactors = parseInt(totalIntString[i], 10)
     for (let j = 0; j < numFactors; j++) {
-      if (safeDecimal > 0 && i === totalIntString.length - 1 && j === numFactors - 1) {
+      if (safeDecimal > 0 && lodash.sum(flattened) === totalInt - factor) {
         flattened.push(FlattenTransactions.satoshiParser(parseInt(factor, 10) + safeDecimal))
       } else {
         flattened.push(parseInt(factor, 10))

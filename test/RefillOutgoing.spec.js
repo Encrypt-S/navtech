@@ -40,7 +40,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(getUnspent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should fail to get unspent', (done) => {
@@ -109,7 +109,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(holdingFiltered)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should have no holding to process', (done) => {
@@ -148,6 +148,7 @@ describe('[RefillOutgoing]', () => {
         sinon.assert.notCalled(mockLogger.writeLog)
         done()
       }
+      RefillOutgoing.runtime = {}
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -156,7 +157,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(processHolding)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should run the callback when all holding are processed', (done) => {
@@ -194,7 +195,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(checkIfHoldingIsSpendable)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should not process holding transaction because its below the confirmation threshold', (done) => {
@@ -240,7 +241,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(holdingDecrypted)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should not process the holding because the encyptedData is bad (returned false)', (done) => {
@@ -331,6 +332,7 @@ describe('[RefillOutgoing]', () => {
           if (i === 100) done()
         },
       }
+      RefillOutgoing.runtime = {}
       const mockLogger = {
         writeLog: sinon.spy(),
       }
@@ -342,7 +344,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(checkRandomTransactions)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should not receive bad randomized transactions (returned false)', (done) => {
@@ -418,7 +420,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(sendRawRefillTransaction)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should create the spent transactions array and call the rawTransaction function', (done) => {
@@ -450,7 +452,7 @@ describe('[RefillOutgoing]', () => {
     })
   })
   describe('(refillSent)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RefillOutgoing = rewire('../src/lib/RefillOutgoing')
     })
     it('should not fail to send the raw holding transaction (returned false)', (done) => {

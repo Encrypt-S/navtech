@@ -33,30 +33,21 @@ ProcessOutgoing.processPending = () => {
     })
     return
   }
-  ProcessOutgoing.runtime.partialTransactions = []
-  RandomizeTransactions.outgoing({
+
+  // ProcessOutgoing.mockSend()
+
+  SendToAddress.send({
+    client: ProcessOutgoing.runtime.navClient,
+    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n,
+    amount: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.v,
     transaction: ProcessOutgoing.runtime.remainingTransactions[0],
-    amount: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.v, // value
-    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n, // nav
-  }, ProcessOutgoing.amountsRandomized)
-  return
+  }, ProcessOutgoing.sentNav)
 }
 
 ProcessOutgoing.transactionFailed = () => {
   ProcessOutgoing.runtime.failedTransactions.push(ProcessOutgoing.runtime.remainingTransactions[0])
   ProcessOutgoing.runtime.remainingTransactions.splice(0, 1)
   ProcessOutgoing.processPending()
-}
-
-ProcessOutgoing.amountsRandomized = (success, data) => {
-  if (!success || !data) {
-    Logger.writeLog('PROO_002', 'failed to randomize transaction', { success, data }, true)
-    ProcessOutgoing.transactionFailed()
-    return
-  }
-  ProcessOutgoing.runtime.partialTransactions = data.partialTransactions
-  ProcessOutgoing.createNavTransactions()
-  // ProcessOutgoing.mockSend()
 }
 
 ProcessOutgoing.mockSend = () => {
@@ -68,39 +59,15 @@ ProcessOutgoing.mockSend = () => {
   ProcessOutgoing.processPending()
 }
 
-ProcessOutgoing.createNavTransactions = () => {
-  if (ProcessOutgoing.runtime.partialTransactions.length < 1) {
-    Logger.writeLog('PROO_003', 'all partial nav sent', {
-      transaction: ProcessOutgoing.runtime.remainingTransactions[0].transaction,
-    })
-    ProcessOutgoing.runtime.successfulTransactions.push({
-      transaction: ProcessOutgoing.runtime.remainingTransactions[0].transaction,
-    })
-    ProcessOutgoing.runtime.remainingTransactions.splice(0, 1)
-    ProcessOutgoing.processPending()
-    return
-  }
-
-  SendToAddress.send({
-    client: ProcessOutgoing.runtime.navClient,
-    address: ProcessOutgoing.runtime.remainingTransactions[0].decrypted.n,
-    amount: ProcessOutgoing.runtime.partialTransactions[0],
-    transaction: ProcessOutgoing.runtime.remainingTransactions[0],
-  }, ProcessOutgoing.sentPartialNav)
-}
-
-ProcessOutgoing.sentPartialNav = (success, data) => {
+ProcessOutgoing.sentNav = (success, data) => {
   if (!success || !data || !data.sendOutcome) {
     Logger.writeLog('PROO_004', 'failed nav send to address', data, true)
-    ProcessOutgoing.runtime.callback(false, {
-      message: 'failed sending partial transaction to address',
-      failedTransaction: ProcessOutgoing.runtime.remainingTransactions[0],
-      remainingPartials: ProcessOutgoing.runtime.partialTransactions,
-    })
-    return
+    ProcessOutgoing.runtime.failedTransactions.push(ProcessOutgoing.runtime.remainingTransactions[0])
+  } else {
+    ProcessOutgoing.runtime.successfulTransactions.push(ProcessOutgoing.runtime.remainingTransactions[0])
   }
-  ProcessOutgoing.runtime.partialTransactions.splice(0, 1)
-  ProcessOutgoing.createNavTransactions()
+  ProcessOutgoing.runtime.remainingTransactions.splice(0, 1)
+  ProcessOutgoing.processPending()
   return
 }
 

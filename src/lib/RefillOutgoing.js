@@ -88,7 +88,9 @@ RefillOutgoing.holdingDecrypted = (success, data) => {
 
   RefillOutgoing.runtime.holdingTransaction = data.transaction
 
-  const addresses = JSON.parse(data.decrypted) // @TODO try, catch this
+  // console.log('RFL_TEST_001', data)
+
+  const addresses = data.decrypted.slice(0)
 
   if (addresses.constructor !== Array) {
     Logger.writeLog('RFL_007A', 'decrypted data not an array of addresses', { currentHolding: RefillOutgoing.runtime.currentHolding })

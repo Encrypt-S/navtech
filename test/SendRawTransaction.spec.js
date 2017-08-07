@@ -113,7 +113,7 @@ describe('[SendRawTransaction]', () => {
     })
   })
   describe('(signRaw)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SendRawTransaction = rewire('../src/lib/SendRawTransaction')
     })
     it('should fail to sign the raw transaction', (done) => {
@@ -226,7 +226,7 @@ describe('[SendRawTransaction]', () => {
     })
   })
   describe('(walletUnlocked)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SendRawTransaction = rewire('../src/lib/SendRawTransaction')
     })
     it('should fail to unlock the wallet', (done) => {
@@ -273,7 +273,7 @@ describe('[SendRawTransaction]', () => {
     })
   })
   describe('(sendRaw)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SendRawTransaction = rewire('../src/lib/SendRawTransaction')
     })
     it('should fail to create the raw transaction', (done) => {
@@ -294,6 +294,34 @@ describe('[SendRawTransaction]', () => {
         writeLog: sinon.spy(),
       }
 
+      SendRawTransaction.__set__('Logger', mockLogger)
+      SendRawTransaction.sendRaw({
+        signedRaw: { hex: '1234' },
+        client,
+      }, callback)
+    })
+    it('should create the mock raw transaction', (done) => {
+      const callback = (success, data) => {
+        expect(success).toBe(true)
+        expect(data.rawOutcome).toBe('dummy-tx-id')
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'RAW_TEST_001')
+        done()
+      }
+      const client = {
+        sendRawTransaction: () => { return Promise.resolve('TXID') },
+      }
+
+      SendRawTransaction.runtime = {}
+
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      const globalSettings = {
+        serverType: 'INCOMING',
+        preventSend: true,
+      }
+      SendRawTransaction.__set__('globalSettings', globalSettings)
       SendRawTransaction.__set__('Logger', mockLogger)
       SendRawTransaction.sendRaw({
         signedRaw: { hex: '1234' },

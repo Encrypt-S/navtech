@@ -1,4 +1,9 @@
 {
+  "version": {
+    "major": 1,
+    "minor": 2,
+    "patch": 0
+  },
   "keyFolders": {
     "private": {
       "path": "./keys/private/",
@@ -33,6 +38,8 @@
   "subCoinsPerTx": 1,
   "subChainTxFee": 0.0001,
   "minConfs": 1,
+  "maxConfs": 60,
+  "maxQueue": 120,
   "blockThreshold": {
     "checking": 5,
     "processing": 3

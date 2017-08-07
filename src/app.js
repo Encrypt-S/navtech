@@ -245,6 +245,7 @@ const apiInit = () => {
       }))
       return
     }
+    // Logger.writeLog('APP_TEST_001', 'success get-addresses', { data })
     NavtechApi.runtime.res.send(JSON.stringify({
       status: 200,
       type: 'SUCCESS',
@@ -320,6 +321,18 @@ const apiInit = () => {
         type: 'FAIL',
         code: 'APP_026',
         message: 'failed to receive params',
+      }))
+      return
+    }
+
+    if (globalSettings.serverType === 'INCOMING' && IncomingServer.paused
+       || globalSettings.serverType === 'OUTGOING' && OutgoingServer.paused) {
+      Logger.writeLog('APP_026A', 'this server is paused for manual recovery', { body: req.body })
+      NavtechApi.runtime.res.send(JSON.stringify({
+        status: 200,
+        type: 'FAIL',
+        code: 'APP_026A',
+        message: 'server is not accepting transactions',
       }))
       return
     }
@@ -452,7 +465,7 @@ const apiInit = () => {
           highestConf = pending.confirmations
         }
       }
-      if (highestConf > 60) {
+      if (highestConf > privateSettings.maxQueue) {
         Logger.writeLog('APP_030B', 'the queue is too long', { highestConf }, true)
         NavtechApi.runtime.res.send(JSON.stringify({
           status: 200,
@@ -571,12 +584,19 @@ const apiInit = () => {
 
     returnData.nav_addresses = NavtechApi.runtime.navAddresses
 
+    // Logger.writeLog('APP_TEST_002', 'success check-node', {
+    //   returnData,
+    //   request: NavtechApi.runtime.req.body,
+    // })
+
     NavtechApi.runtime.res.send(JSON.stringify({
       status: 200,
       type: 'SUCCESS',
       data: returnData,
     }))
   }
+
+  // @TODO check if server paused before returning as valid incoming server
 
   // -------------- CHECK IF SERVER IS PROCESSING ------------------------------------------------------------------------------------------
 

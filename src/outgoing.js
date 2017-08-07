@@ -2,17 +2,17 @@
 
 const Client = require('bitcoin-core')
 
-const Logger = require('./lib/Logger.js')
-const EncryptionKeys = require('./lib/EncryptionKeys.js')
-const PreFlight = require('./lib/PreFlight.js')
-const PrepareOutgoing = require('./lib/PrepareOutgoing.js')
-const ProcessOutgoing = require('./lib/ProcessOutgoing.js')
-const PayoutFee = require('./lib/PayoutFee')
-const ReturnSubnav = require('./lib/ReturnSubnav')
+let Logger = require('./lib/Logger.js') //eslint-disable-line
+let EncryptionKeys = require('./lib/EncryptionKeys.js') //eslint-disable-line
+let PreFlight = require('./lib/PreFlight.js') //eslint-disable-line
+let PrepareOutgoing = require('./lib/PrepareOutgoing.js') //eslint-disable-line
+let ProcessOutgoing = require('./lib/ProcessOutgoing.js') //eslint-disable-line
+let PayoutFee = require('./lib/PayoutFee') //eslint-disable-line
+let ReturnSubnav = require('./lib/ReturnSubnav') //eslint-disable-line
 
 const config = require('config')
 
-const settings = config.get('OUTGOING')
+let settings = config.get('OUTGOING') //eslint-disable-line
 
 // -------------- RUN OUTGOING SERVER ------------------------------------------
 
@@ -41,7 +41,7 @@ OutgoingServer.init = () => {
 
   Logger.writeLog('OUT_000', 'server starting')
   EncryptionKeys.findKeysToRemove({ type: 'private' }, OutgoingServer.startProcessing)
-  setInterval(() => {
+  OutgoingServer.cron = setInterval(() => {
     if (OutgoingServer.paused === false) {
       EncryptionKeys.findKeysToRemove({ type: 'private' }, OutgoingServer.startProcessing)
     } else {
@@ -82,7 +82,10 @@ OutgoingServer.preFlightComplete = (success, data) => {
 }
 
 OutgoingServer.currentBatchPrepared = (success, data) => {
-  if (!success) {
+  if (!success || !data || !data.currentBatch || data.currentBatch.length === 0) {
+    if (data.failedSubTransactions && data.failedSubTransactions.length > 0) {
+      Logger.writeLog('OUT_003A', 'failed to prepare some subtransactions', { success, data }, true)
+    }
     OutgoingServer.processing = false
     return
   }
@@ -112,6 +115,10 @@ OutgoingServer.transactionsProcessed = (success, data) => {
     return
   }
 
+  if (data.failedTransactions && data.failedTransactions.length > 0) {
+    Logger.writeLog('OUT_005A', 'failed to send send some transactions', { success, data }, true)
+  }
+
   OutgoingServer.runtime.successfulTransactions = data.successfulTransactions
 
   PayoutFee.run({
@@ -123,8 +130,7 @@ OutgoingServer.transactionsProcessed = (success, data) => {
 OutgoingServer.feePaid = (success, data) => {
   if (!success) {
     Logger.writeLog('OUT_006', 'failed nav send to txfee address', {
-      transaction: data.transaction,
-      error: data.error,
+      data,
     }, true)
   }
 
@@ -135,10 +141,11 @@ OutgoingServer.feePaid = (success, data) => {
   }, OutgoingServer.subnavReturned)
 }
 
-OutgoingServer.subnavReturned = (success) => {
+OutgoingServer.subnavReturned = (success, data) => {
   if (!success) {
     Logger.writeLog('OUT_007', 'unable to return subnav to incoming server', {
       transactions: OutgoingServer.runtime.successfulTransactions,
+      data,
     }, true)
     OutgoingServer.paused = true
     OutgoingServer.processing = false

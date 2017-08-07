@@ -6,7 +6,7 @@ const lodash = require('lodash')
 let Logger = require('./Logger.js') //eslint-disable-line
 let NavCoin = require('./NavCoin.js') //eslint-disable-line
 
-const globalSettings = config.get('GLOBAL')
+let globalSettings = config.get('GLOBAL') //eslint-disable-line
 
 let settings = false
 if (globalSettings.serverType === 'INCOMING') settings = config.get('INCOMING')
