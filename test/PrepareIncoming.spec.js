@@ -547,7 +547,6 @@ describe('[PrepareIncoming]', () => {
       PrepareIncoming.__set__('Logger', mockLogger)
       PrepareIncoming.runtime = {
         callback: (success, data) => {
-          console.log(success, data)
           expect(success).toBe(true)
           expect(data.pendingToReturn).toEqual(1234)
           sinon.assert.calledOnce(mockLogger.writeLog)
@@ -628,7 +627,6 @@ describe('[PrepareIncoming]', () => {
       }
       const mockFlattenTransactions = {
         incoming: (options, callback) => {
-          console.log(options, callback)
           expect(options.amountToFlatten).toBe(542)
           expect(callback).toBe(PrepareIncoming.flattened)
           expect(PrepareIncoming.runtime.remainingToFlatten).toEqual([{ unique: 'ASD', amount: 542, transactions: {} }])

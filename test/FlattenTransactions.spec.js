@@ -27,7 +27,6 @@ describe('[FlattenTransactions]', () => {
       const amount = 1126.65
       const callback = (success, data) => {
         expect(success).toBe(true)
-        console.log(data)
         expect(data.flattened.length).toBe(5)
         expect(data.flattened[0]).toBe(1000)
         expect(data.flattened[1]).toBe(100)

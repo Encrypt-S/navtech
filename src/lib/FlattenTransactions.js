@@ -20,7 +20,6 @@ FlattenTransactions.incoming = (options, callback) => {
 }
 
 FlattenTransactions.flattenIncoming = () => {
-  console.log('FlattenTransactions.runtime.amountToFlatten', FlattenTransactions.runtime.amountToFlatten)
   const totalInt = Math.floor(FlattenTransactions.runtime.amountToFlatten)
   const totalIntString = totalInt.toString()
   const decimal = FlattenTransactions.runtime.amountToFlatten - totalInt

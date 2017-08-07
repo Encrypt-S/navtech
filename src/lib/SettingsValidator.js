@@ -83,8 +83,6 @@ function eachField(value, ignoreList, validation, currentKey) {
     return
   }
 
-  if (currentKey === 'remote') console.log(currentKey, value)
-
   switch (validation.type) {
     case 'DOMAIN':
       validateDomain(value, validation, currentKey)

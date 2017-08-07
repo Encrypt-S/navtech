@@ -111,7 +111,6 @@ describe('[PayoutFee]', () => {
     it('should run sendtoaddress if all conditions met', (done) => {
       const SendToAddress = {
         send: (options, callback) => {
-          console.log(options, callback)
           expect(options.client).toBe(mockClient)
           expect(options.address).toBe(mockSettings.anonTxFeeAddress)
           expect(options.amount).toBe(120 - 100 - privateSettings.txFee)
@@ -120,7 +119,6 @@ describe('[PayoutFee]', () => {
         },
       }
       const callback = () => {
-        console.log('CALLBACK')
         done()
       }
       const mockClient = {

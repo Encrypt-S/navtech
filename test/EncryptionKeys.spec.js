@@ -143,7 +143,6 @@ describe('[EncryptionKeys]', () => {
       EncryptionKeys.__set__('ursa', ursaMock)
       const callback = (success, data) => {
         expect(success).toBe(true)
-        console.log(data)
         done()
       }
       EncryptionKeys.testKeyPair({ privKeyFile, pubKeyFile }, callback)
@@ -161,7 +160,6 @@ describe('[EncryptionKeys]', () => {
         expect(success).toBe(true)
         expect(data.privKeyFile).toEqual(privKeyFile)
         expect(data.pubKeyFile).toEqual(pubKeyFile)
-        console.log(data)
         done()
       }
       EncryptionKeys.getEncryptionKeys({}, callback)

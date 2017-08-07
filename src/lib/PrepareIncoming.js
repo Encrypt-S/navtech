@@ -67,13 +67,10 @@ PrepareIncoming.unspentFiltered = (success, data) => {
 PrepareIncoming.partialsGrouped = (success, data) => {
   if (!success || !data) {
     Logger.writeLog('PREPI_003A', 'GroupPartials failed', { success, data })
-    // @TODO handle this return case
     PrepareIncoming.runtime.callback(false, {
       pendingToReturn: data ? data.transactionsToReturn : null,
     })
   }
-
-  console.log('PREPI_TEST_001', 'debug data', { data })
 
   if (!data.readyToProcess) {
     Logger.writeLog('PREPI_003AA', 'GroupPartials failed to return correct data', { data })
@@ -113,7 +110,6 @@ PrepareIncoming.pruneUnspent = (options, callback) => {
       currentBatch.push(txGroup)
     }
   })
-  // console.log('TEST_currentBatch', currentBatch, options)
   if (hasPruned) {
     callback(true, { currentBatch, sumPending })
   } else {
@@ -157,7 +153,6 @@ PrepareIncoming.flattened = (success, data) => {
     // this will get rejected after the block timeout if it continually fails
     PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
     if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
-      console.log('!success && remaining == 0', PrepareIncoming.runtime.currentBatch)
       PrepareIncoming.runtime.callback(true, {
         currentBatch: PrepareIncoming.runtime.currentBatch,
         currentFlattened: PrepareIncoming.runtime.currentFlattened,
@@ -174,7 +169,6 @@ PrepareIncoming.flattened = (success, data) => {
   }
 
   if (PrepareIncoming.runtime.numFlattened + data.flattened.length >= privateSettings.maxAddresses) {
-    console.log('num > maxAddresses', PrepareIncoming.runtime.currentBatch)
     PrepareIncoming.runtime.callback(true, {
       currentBatch: PrepareIncoming.runtime.currentBatch,
       currentFlattened: PrepareIncoming.runtime.currentFlattened,
@@ -189,7 +183,6 @@ PrepareIncoming.flattened = (success, data) => {
   PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
 
   if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
-    console.log('remaining == 0', PrepareIncoming.runtime.currentBatch)
     PrepareIncoming.runtime.callback(true, {
       currentBatch: PrepareIncoming.runtime.currentBatch,
       currentFlattened: PrepareIncoming.runtime.currentFlattened,

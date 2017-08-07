@@ -662,7 +662,6 @@ describe('[GroupPartials]', () => {
         readyToProcess: [],
         partials,
         callback: (success, data) => {
-          console.log(data)
           sinon.assert.notCalled(mockLogger.writeLog)
           expect(success).toBe(true)
           expect(data.readyToProcess).toEqual([])
@@ -695,7 +694,6 @@ describe('[GroupPartials]', () => {
         readyToProcess: [],
         partials,
         callback: (success, data) => {
-          console.log(data)
           sinon.assert.notCalled(mockLogger.writeLog)
           expect(success).toBe(true)
           expect(data.readyToProcess).toEqual([])

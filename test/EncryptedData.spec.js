@@ -104,7 +104,6 @@ describe('[EncryptedData]', () => {
       const callback = (success, data) => {
         expect(success).toBe(false)
         expect(data.message).toBeA('string')
-        console.log('MESSAGE: ', data.message)
         done()
       }
       EncryptedData.decryptData({ encryptedData: '1234' }, callback)
@@ -125,7 +124,6 @@ describe('[EncryptedData]', () => {
       const callback = (success, data) => {
         expect(success).toBe(false)
         expect(data.message).toBeA('string')
-        console.log('MESSAGE: ', data.message)
         done()
       }
       EncryptedData.decryptData({ encryptedData: '1234' }, callback)
@@ -135,7 +133,6 @@ describe('[EncryptedData]', () => {
       EncryptedData.__set__('fs', fsMock)
       EncryptedData.__set__('ursa', ursaMock)
       const callback = (success, data) => {
-        console.log(success, data)
         expect(success).toBe(true)
         expect(data.decrypted).toEqual({ n: 'XYZ', u: '1234', p: '1', o: '3', t: 20 })
         done()

@@ -55,7 +55,7 @@ GroupPartials.checkDecrypted = (success, data) => {
   }
   if (!data.decrypted.n || !data.decrypted.t || !data.decrypted.p || !data.decrypted.o || !data.decrypted.u) {
     Logger.writeLog('GRP_003', 'failed to receive correct encrypted params', {
-      n: data.decrypted.n, // @TODO remove logging n before deployment
+      n: !!data.decrypted.n,
       t: data.decrypted.t,
       p: data.decrypted.p,
       o: data.decrypted.o,
@@ -98,7 +98,7 @@ GroupPartials.groupPartials = (decrypted, transaction) => {
     Logger.writeLog('GRP_006', 'this partial group is already flagged as completed', {
       partials: GroupPartials.runtime.partials[decrypted.u],
       transaction,
-      n: decrypted.n, // @TODO remove logging n before deployment
+      n: !!decrypted.n,
       t: decrypted.t,
       p: decrypted.p,
       o: decrypted.o,

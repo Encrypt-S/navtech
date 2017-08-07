@@ -93,14 +93,12 @@ ProcessIncoming.reEncryptAddress = (destination, maxDelay, txGroup, flattened, c
       t: ProcessIncoming.runtime.currentBlockHeight + Math.round(Math.random() * maxDelay), // time
     }
 
-    // @TODO check all this data actually fits in the 1024bit encryption (i think its okay, 116 characters)
     const encrypted = ProcessIncoming.runtime.outgoingPubKey.encrypt(
       JSON.stringify(dataToEncrypt), 'utf8', 'base64', ursa.RSA_PKCS1_PADDING
     )
 
     if (encrypted.length !== privateSettings.encryptionOutput.OUTGOING && counter < privateSettings.maxEncryptionAttempts) {
-      // @TODO remove destination from log before deployment
-      Logger.writeLog('PROI_005', 'public key encryption failed', { destination, maxDelay, txGroup, flattened, counter, encrypted })
+      Logger.writeLog('PROI_005', 'public key encryption failed', { maxDelay, txGroup, flattened, counter, encrypted })
       ProcessIncoming.reEncryptAddress = (destination, maxDelay, txGroup, flattened, counter + 1)
       return
     }
