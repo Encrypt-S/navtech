@@ -646,6 +646,9 @@ describe('[PrepareIncoming]', () => {
         numFlattened: 10,
         currentFlattened: {},
         transactionsToReturn: null,
+        settings: {
+          anonFeePercent: 0.5,
+        },
       }
       PrepareIncoming.flattened(false, {})
     })
@@ -674,6 +677,9 @@ describe('[PrepareIncoming]', () => {
         numFlattened: 10,
         currentFlattened: {},
         transactionsToReturn: null,
+        settings: {
+          anonFeePercent: 0.5,
+        },
       }
       PrepareIncoming.flattened(true, { junkParam: 1234 })
     })
@@ -741,6 +747,9 @@ describe('[PrepareIncoming]', () => {
         numFlattened: 10,
         currentFlattened: {},
         transactionsToReturn: null,
+        settings: {
+          anonFeePercent: 0.5,
+        },
       }
       PrepareIncoming.flattened(true, { flattened: [100, 100, 10, 10, 10, 1] })
     })

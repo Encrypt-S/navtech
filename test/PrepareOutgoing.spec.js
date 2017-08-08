@@ -565,8 +565,8 @@ describe('[PrepareOutgoing]', () => {
         validateAddress: () => { return Promise.resolve({ isvalid: true }) },
       }
       const decrypted = {
-        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
-        n: 1000,
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 1000,
         s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
         t: 10000,
       }
@@ -601,8 +601,8 @@ describe('[PrepareOutgoing]', () => {
         validateAddress: () => { return Promise.resolve({ isvalid: true }) },
       }
       const decrypted = {
-        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
-        n: 1000,
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 1000,
         s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
         t: 10000,
       }
@@ -629,8 +629,8 @@ describe('[PrepareOutgoing]', () => {
         validateAddress: () => { return Promise.resolve({ isvalid: true }) },
       }
       const decrypted = {
-        a: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
-        n: 1000,
+        n: 'NKxkTEjTLARTUq4tz2i8Gzho8pHDYLLmWj',
+        v: 1000,
         s: '5rgXsNYQ9y4lArEmWA1Wrh9ztUmoG2vZBx1SB1FnZX',
       }
       const transaction = {

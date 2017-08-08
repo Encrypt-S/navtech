@@ -320,7 +320,7 @@ describe('[RefillOutgoing]', () => {
     })
     it('should figure out how many random transactions to make', (done) => {
       const transaction = { confirmations: 10, amount: 500, txid: 'ABC' }
-      const decrypted = '["QWER", "ASDF", "ZXCV", "POIU", "LKJH", "MNBV"]'
+      const decrypted = ["QWER", "ASDF", "ZXCV", "POIU", "LKJH", "MNBV"]
       let i = 0
       const RandomizeTransactions = {
         incoming: (options, callback) => {
@@ -332,7 +332,11 @@ describe('[RefillOutgoing]', () => {
           if (i === 100) done()
         },
       }
-      RefillOutgoing.runtime = {}
+      const hld1 = { confirmations: 0, amount: 100, txid: 'XYZ' }
+      const hld2 = { confirmations: 10, amount: 500, txid: 'ABC' }
+      RefillOutgoing.runtime = {
+        currentHolding: [hld1, hld2],
+      }
       const mockLogger = {
         writeLog: sinon.spy(),
       }

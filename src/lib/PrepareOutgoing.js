@@ -121,14 +121,12 @@ PrepareOutgoing.testDecrypted = (decrypted, transaction) => {
       PrepareOutgoing.failedTransaction()
       return
     }
-
     if (decrypted.t > PrepareOutgoing.runtime.currentBlockHeight) {
       // don't fail it, just move on to the next one
       PrepareOutgoing.runtime.currentPending.splice(0, 1)
       PrepareOutgoing.processTransaction()
       return
     }
-
     if (PrepareOutgoing.runtime.navBalance > PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.v)) {
       PrepareOutgoing.runtime.sumPending = PrepareOutgoing.runtime.sumPending + parseFloat(decrypted.v)
       PrepareOutgoing.runtime.currentBatch.push({ decrypted, transaction })

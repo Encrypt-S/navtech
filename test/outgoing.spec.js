@@ -135,7 +135,7 @@ describe('[OutgoingServer]', () => {
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
 
-      OutgoingServer.currentBatchPrepared(false)
+      OutgoingServer.currentBatchPrepared(false, {})
 
       sinon.assert.notCalled(mockLogger.writeLog)
       expect(OutgoingServer.processing).toBe(false)

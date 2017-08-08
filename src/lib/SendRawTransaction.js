@@ -22,93 +22,112 @@ SendRawTransaction.createRaw = (options, callback) => {
     return
   }
 
-  SendRawTransaction.runtime = {} // wipe the runtime variables
-  if (options.encrypted) {
-    options.client.createRawTransaction(options.spentTransactions, options.outgoingTransactions, options.encrypted).then((rawTrans) => {
-      SendRawTransaction.signRaw({
-        client: options.client,
-        rawTrans,
-      }, callback)
+  SendRawTransaction.runtime = {
+    counter: 0,
+    retryDelay: 6000,
+    spentTransactions: options.spentTransactions,
+    outgoingTransactions: options.outgoingTransactions,
+    client: options.client,
+    encrypted: options.encrypted || false,
+    callback,
+  } // wipe runtime variables
+  SendRawTransaction.create()
+}
+
+SendRawTransaction.create = () => {
+  if (SendRawTransaction.runtime.encrypted) {
+    SendRawTransaction.runtime.client.createRawTransaction(
+    SendRawTransaction.runtime.spentTransactions,
+    SendRawTransaction.runtime.outgoingTransactions,
+    SendRawTransaction.runtime.encrypted).then((rawTrans) => {
+      SendRawTransaction.signRaw(rawTrans)
       return
     }).catch((err) => {
       Logger.writeLog('RAW_002', 'unable to create raw transaction', {
-        spentTransactions: options.spentTransactions,
-        outgoingTransactions: options.outgoingTransactions,
-        encrypted: options.encrypted,
+        spentTransactions: SendRawTransaction.runtime.spentTransactions,
+        outgoingTransactions: SendRawTransaction.runtime.outgoingTransactions,
+        encrypted: SendRawTransaction.runtime.encrypted,
         error: err,
       })
-      callback(false, { error: err })
+      SendRawTransaction.retry(err) // try again
     })
   } else {
-    options.client.createRawTransaction(options.spentTransactions, options.outgoingTransactions).then((rawTrans) => {
-      SendRawTransaction.signRaw({
-        client: options.client,
-        rawTrans,
-      }, callback)
+    SendRawTransaction.runtime.client.createRawTransaction(
+    SendRawTransaction.runtime.spentTransactions,
+    SendRawTransaction.runtime.outgoingTransactions).then((rawTrans) => {
+      SendRawTransaction.signRaw(rawTrans)
       return
     }).catch((err) => {
       Logger.writeLog('RAW_003', 'unable to create raw transaction', {
-        spentTransactions: options.spentTransactions,
-        outgoingTransactions: options.outgoingTransactions,
+        spentTransactions: SendRawTransaction.runtime.spentTransactions,
+        outgoingTransactions: SendRawTransaction.runtime.outgoingTransactions,
         error: err,
       })
-      callback(false, { error: err })
+      SendRawTransaction.retry(err) // try again
     })
   }
 }
 
-SendRawTransaction.signRaw = (options, callback) => {
-  options.client.signRawTransaction(options.rawTrans).then((signedRaw) => {
-    SendRawTransaction.sendRaw({
-      client: options.client,
-      signedRaw,
-    }, callback)
+SendRawTransaction.signRaw = (rawTrans) => {
+  SendRawTransaction.runtime.client.signRawTransaction(rawTrans).then((signedRaw) => {
+    SendRawTransaction.sendRaw(signedRaw)
     return
   }).catch((err) => {
-    if (err.code === -13 && !options.triedToUnlock) {
-      SendRawTransaction.runtime.options = options
-      SendRawTransaction.runtime.callback = callback
-      const type = (options.client.port === settings.navCoin.port) ? 'navCoin' : 'subChain'
-      NavCoin.unlockWallet({ settings, client: options.client, type }, SendRawTransaction.walletUnlocked)
+    if (err.code === -13 && !SendRawTransaction.runtime.triedToUnlock) {
+      SendRawTransaction.runtime.rawTrans = rawTrans
+      const type = (SendRawTransaction.runtime.client.port === settings.navCoin.port) ? 'navCoin' : 'subChain'
+      NavCoin.unlockWallet({ settings, client: SendRawTransaction.runtime.client, type }, SendRawTransaction.walletUnlocked)
       return
     }
     Logger.writeLog('RAW_004', 'unable to sign raw transaction', {
-      rawTrans: options.rawTrans,
+      rawTrans,
       error: err,
     })
-    callback(false, { error: err })
+    SendRawTransaction.retry(err) // try again
   })
 }
 
-SendRawTransaction.walletUnlocked = (success, data) => {
+SendRawTransaction.walletUnlocked = (success, data) => { //@TODO
   if (!success) {
     Logger.writeLog('RAW_006', 'unable to unlock wallet', { success, data })
     SendRawTransaction.runtime.callback(false, data)
     return
   }
-  const options = {
-    client: SendRawTransaction.runtime.options.client,
-    rawTrans: SendRawTransaction.runtime.options.rawTrans,
-    triedToUnlock: true,
-  }
-  SendRawTransaction.signRaw(options, SendRawTransaction.runtime.callback)
+  SendRawTransaction.runtime.triedToUnlock = true
+  SendRawTransaction.signRaw(SendRawTransaction.runtime.rawTrans)
 }
 
-SendRawTransaction.sendRaw = (options, callback) => {
+SendRawTransaction.sendRaw = (signedRaw) => {
   if (globalSettings.preventSend) {
-    Logger.writeLog('RAW_TEST_001', 'preventSend triggered', { options })
-    callback(true, { rawOutcome: 'dummy-tx-id' })
+    Logger.writeLog('RAW_TEST_001', 'preventSend triggered', { runtime: SendRawTransaction.runtime })
+    SendRawTransaction.runtime.callback(true, { rawOutcome: 'dummy-tx-id' })
     return
   }
-  options.client.sendRawTransaction(options.signedRaw.hex).then((rawOutcome) => {
-    callback(true, { rawOutcome })
+  SendRawTransaction.runtime.client.sendRawTransaction(signedRaw.hex).then((rawOutcome) => {
+    SendRawTransaction.runtime.callback(true, { rawOutcome })
   }).catch((err) => {
     Logger.writeLog('RAW_005', 'unable to send raw transaction', {
-      signedRaw: options.signedRaw,
+      signedRaw: signedRaw,
       error: err,
     })
-    callback(false, { error: err })
+    SendRawTransaction.retry(err) // try again
   })
+}
+
+SendRawTransaction.retry = (err) => {
+  if (SendRawTransaction.runtime.counter >= 10) {
+    SendRawTransaction.runtime.callback(false, { error: err })
+    return
+  } else {
+    Logger.writeLog('RAW_007', 'retrying', {
+      error: err,
+      counter: SendRawTransaction.runtime.counter,
+    })
+    setTimeout(() => {
+      SendRawTransaction.runtime.counter += 1
+      SendRawTransaction.create()
+    }, SendRawTransaction.runtime.retryDelay) //6 second delay & try again
+  }
 }
 
 module.exports = SendRawTransaction
