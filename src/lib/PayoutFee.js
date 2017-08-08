@@ -41,6 +41,7 @@ PayoutFee.send = () => {
       client: PayoutFee.runtime.navClient,
       address: PayoutFee.runtime.settings.anonTxFeeAddress,
       amount: txFeeAccrued,
+      transaction: { txid: 'TX_FEE_PAYOUT' },
     }, PayoutFee.sent)
   }).catch((err) => {
     Logger.writeLog('PAY_002A', 'error getting balance', { error: err })
