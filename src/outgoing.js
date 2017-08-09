@@ -81,9 +81,7 @@ OutgoingServer.preFlightComplete = (success, data) => {
 
 OutgoingServer.feePaid = (success, data) => {
   if (!success) {
-    Logger.writeLog('OUT_006', 'failed nav send to txfee address', {
-      data,
-    }, true)
+    Logger.writeLog('OUT_006', 'failed nav send to txfee address', { data, success })
   }
   OutgoingServer.navClient.getBalance().then((navBalance) => {
     OutgoingServer.runtime.navBalance = navBalance
