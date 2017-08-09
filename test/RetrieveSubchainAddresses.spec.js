@@ -26,12 +26,12 @@ describe('[RetrieveSubchainAddresses]', () => {
       const callback = () => {}
       const subClient = { getinfo: () => {} }
       const chosenOutgoing = { ipAddress: '123.123.123.123' }
-      const currentBatch = [1, 2, 3]
+      const numAddresses = 10
       RetrieveSubchainAddresses.getSubAddresses = () => {
         expect(RetrieveSubchainAddresses.runtime.callback).toBe(callback)
         expect(RetrieveSubchainAddresses.runtime.subClient).toBe(subClient)
         expect(RetrieveSubchainAddresses.runtime.chosenOutgoing).toBe(chosenOutgoing)
-        expect(RetrieveSubchainAddresses.runtime.currentBatch).toBe(currentBatch)
+        expect(RetrieveSubchainAddresses.runtime.numAddresses).toBe(numAddresses)
         sinon.assert.notCalled(mockLogger.writeLog)
         done()
       }
@@ -39,19 +39,19 @@ describe('[RetrieveSubchainAddresses]', () => {
         writeLog: sinon.spy(),
       }
       RetrieveSubchainAddresses.__set__('Logger', mockLogger)
-      RetrieveSubchainAddresses.run({ subClient, chosenOutgoing, currentBatch }, callback)
+      RetrieveSubchainAddresses.run({ subClient, chosenOutgoing, numAddresses }, callback)
     })
   })
   describe('(getSubAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should build the request and send it to the outgoing server', (done) => {
       const chosenOutgoing = { ipAddress: '123.123.123.123', port: '3000' }
-      const currentBatch = [1, 2, 3]
+      const numAddresses = 10
       RetrieveSubchainAddresses.runtime = {
         chosenOutgoing,
-        currentBatch,
+        numAddresses,
       }
       const mockLogger = {
         writeLog: sinon.spy(),
@@ -60,7 +60,7 @@ describe('[RetrieveSubchainAddresses]', () => {
         expect(RetrieveSubchainAddresses.runtime.outgoingAddress).toBe(chosenOutgoing.ipAddress + ':' + chosenOutgoing.port)
         expect(options.form.type).toBe('SUBCHAIN')
         expect(options.form.account).toBe('OUTGOING')
-        expect(options.form.num_addresses).toBe(3)
+        expect(options.form.num_addresses).toBe(10)
         expect(callback).toBe(RetrieveSubchainAddresses.requestResponse)
         sinon.assert.notCalled(mockLogger.writeLog)
         done()
@@ -72,10 +72,10 @@ describe('[RetrieveSubchainAddresses]', () => {
   })
   it('should build the request and send it to the outgoing server without port', (done) => {
     const chosenOutgoing = { ipAddress: '123.123.123.123' }
-    const currentBatch = [1, 2, 3]
+    const numAddresses = 50
     RetrieveSubchainAddresses.runtime = {
       chosenOutgoing,
-      currentBatch,
+      numAddresses,
     }
     const mockLogger = {
       writeLog: sinon.spy(),
@@ -84,7 +84,7 @@ describe('[RetrieveSubchainAddresses]', () => {
       expect(RetrieveSubchainAddresses.runtime.outgoingAddress).toBe(chosenOutgoing.ipAddress)
       expect(options.form.type).toBe('SUBCHAIN')
       expect(options.form.account).toBe('OUTGOING')
-      expect(options.form.num_addresses).toBe(3)
+      expect(options.form.num_addresses).toBe(50)
       expect(callback).toBe(RetrieveSubchainAddresses.requestResponse)
       sinon.assert.notCalled(mockLogger.writeLog)
       done()
@@ -94,15 +94,15 @@ describe('[RetrieveSubchainAddresses]', () => {
     RetrieveSubchainAddresses.getSubAddresses()
   })
   describe('(requestResponse)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should get an error from the outgoing server', (done) => {
       const chosenOutgoing = { ipAddress: '123.123.123.123', port: '3000' }
-      const currentBatch = [1, 2, 3]
+      const numAddresses = 55
       RetrieveSubchainAddresses.runtime = {
         chosenOutgoing,
-        currentBatch,
+        numAddresses,
         callback: (success, data) => {
           expect(success).toBe(false)
           expect(data.message).toBeA('string')
@@ -119,10 +119,10 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
     it('should get no error and continue', (done) => {
       const chosenOutgoing = { ipAddress: '123.123.123.123', port: '3000' }
-      const currentBatch = [1, 2, 3]
+      const numAddresses = 5
       RetrieveSubchainAddresses.runtime = {
         outgoingAddress: chosenOutgoing.ipAddress + ':' + chosenOutgoing.port,
-        currentBatch,
+        numAddresses,
         callback: () => {},
       }
       RetrieveSubchainAddresses.checkOutgoingCanTransact = (body, outgoingAddress) => {
@@ -139,7 +139,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(checkOutgoingCanTransact)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should get a non json response from the server and call false callback', (done) => {
@@ -242,7 +242,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(checkSubAddresses)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should fail because 0 addresses received from server', (done) => {
@@ -263,7 +263,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
     it('should fail because less addressses than needed were received from server', (done) => {
       RetrieveSubchainAddresses.runtime = {
-        currentBatch: [1, 2, 3],
+        numAddresses: 10,
         callback: (success, data) => {
           expect(success).toBe(false)
           expect(data.message).toBeA('string')
@@ -280,7 +280,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
     it('should receive the correct number of addresses and continue to the validator', (done) => {
       RetrieveSubchainAddresses.runtime = {
-        currentBatch: [1, 2, 3],
+        numAddresses: 3,
       }
       const NavCoin = {
         validateAddresses: (options, callback) => {
@@ -298,7 +298,7 @@ describe('[RetrieveSubchainAddresses]', () => {
     })
   })
   describe('(subAddressesValid)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       RetrieveSubchainAddresses = rewire('../src/lib/RetrieveSubchainAddresses')
     })
     it('should fail from error within the address validator', (done) => {

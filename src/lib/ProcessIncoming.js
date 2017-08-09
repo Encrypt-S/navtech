@@ -2,14 +2,13 @@ const lodash = require('lodash')
 const ursa = require('ursa')
 
 let Logger = require('./Logger.js') // eslint-disable-line
-let EncryptedData = require('./EncryptedData.js') // eslint-disable-line
-const privateSettings = require('../settings/private.settings.json')
+let privateSettings = require('../settings/private.settings.json') // eslint-disable-line
 let SendToAddress = require('./SendToAddress.js') // eslint-disable-line
 
 const ProcessIncoming = {}
 
 ProcessIncoming.run = (options, callback) => {
-  const required = ['currentBatch', 'settings', 'subClient', 'outgoingPubKey', 'subAddresses', 'navClient']
+  const required = ['currentBatch', 'settings', 'subClient', 'outgoingPubKey', 'subAddresses', 'navClient', 'currentFlattened']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('PROI_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ProcessIncoming.run' })
@@ -18,66 +17,80 @@ ProcessIncoming.run = (options, callback) => {
   ProcessIncoming.runtime = {
     callback,
     currentBatch: options.currentBatch,
+    remainingTxGroups: options.currentBatch,
+    currentFlattened: options.currentFlattened,
     settings: options.settings,
     subClient: options.subClient,
     navClient: options.navClient,
     outgoingPubKey: options.outgoingPubKey,
     subAddresses: options.subAddresses,
-    transactionsToReturn: [],
-    successfulSubTransactions: [],
+    txGroupsToReturn: [],
+    successfulTxGroups: [],
   }
-  ProcessIncoming.runtime.remainingTransactions = options.currentBatch
-  ProcessIncoming.processPending()
-}
 
-ProcessIncoming.processPending = () => {
-  if (ProcessIncoming.runtime.remainingTransactions.length < 1) {
-    ProcessIncoming.runtime.callback(true, {
-      successfulSubTransactions: ProcessIncoming.runtime.successfulSubTransactions,
-      transactionsToReturn: ProcessIncoming.runtime.transactionsToReturn,
-    })
-    return
-  }
-  EncryptedData.getEncrypted({
-    transaction: ProcessIncoming.runtime.remainingTransactions[0],
-    client: ProcessIncoming.runtime.navClient,
-  }, ProcessIncoming.checkDecrypted)
-  return
-}
-
-ProcessIncoming.transactionFailed = () => {
-  ProcessIncoming.runtime.transactionsToReturn.push(ProcessIncoming.runtime.remainingTransactions[0])
-  ProcessIncoming.runtime.remainingTransactions.splice(0, 1)
-  ProcessIncoming.processPending()
-}
-
-ProcessIncoming.checkDecrypted = (success, data) => {
-  if (!success || !data || !data.decrypted || !data.transaction) {
-    Logger.writeLog('PROI_002', 'failed to decrypt transaction data', { success })
-    ProcessIncoming.transactionFailed()
-    return
-  }
-  ProcessIncoming.runtime.navClient.validateAddress(data.decrypted).then((addressInfo) => {
-    if (addressInfo.isvalid !== true) {
-      Logger.writeLog('PROI_003', 'encrypted address invalid', { success, data })
-      ProcessIncoming.transactionFailed()
-      return
-    }
-    ProcessIncoming.reEncryptAddress(data.decrypted, data.transaction, 0)
+  ProcessIncoming.runtime.navClient.getBlockCount().then((blockHeight) => {
+    ProcessIncoming.runtime.currentBlockHeight = blockHeight
+    ProcessIncoming.processPending()
   }).catch((err) => {
-    Logger.writeLog('PROI_004', 'failed to decrypt transaction data', { success, error: err })
-    ProcessIncoming.transactionFailed()
+    Logger.writeLog('PROI_001A', 'failed to get the current blockheight', { error: err })
+    callback(false, { message: 'failed to get the current blockheight' })
     return
   })
 }
 
-ProcessIncoming.reEncryptAddress = (decryptedAddress, transaction, counter) => {
+ProcessIncoming.processPending = () => {
+  if (lodash.size(ProcessIncoming.runtime.remainingTxGroups) < 1) {
+    ProcessIncoming.runtime.callback(true, {
+      successfulTxGroups: ProcessIncoming.runtime.successfulTxGroups,
+      txGroupsToReturn: ProcessIncoming.runtime.txGroupsToReturn,
+    })
+    return
+  }
+
+  const currentTxGroup = ProcessIncoming.runtime.remainingTxGroups[0]
+
+  ProcessIncoming.runtime.remainingFlattened = ProcessIncoming.runtime.currentFlattened[currentTxGroup.unique]
+  ProcessIncoming.runtime.destination = currentTxGroup.destination
+  ProcessIncoming.runtime.maxDelay = currentTxGroup.timeDelay
+  ProcessIncoming.processPartial()
+}
+
+ProcessIncoming.processPartial = () => {
+  if (ProcessIncoming.runtime.remainingFlattened.length < 1) {
+    ProcessIncoming.runtime.successfulTxGroups.push(ProcessIncoming.runtime.remainingTxGroups[0])
+    ProcessIncoming.runtime.remainingTxGroups.splice(0, 1)
+    ProcessIncoming.processPending()
+    return
+  }
+  ProcessIncoming.reEncryptAddress(
+    ProcessIncoming.runtime.destination,
+    ProcessIncoming.runtime.maxDelay,
+    ProcessIncoming.runtime.remainingTxGroups[0],
+    ProcessIncoming.runtime.remainingFlattened[0],
+    0
+  )
+}
+
+ProcessIncoming.partialFailed = (txGroup) => {
+  const currentTxGroup = ProcessIncoming.runtime.remainingTxGroups[0]
+  if (ProcessIncoming.runtime.currentFlattened[currentTxGroup.unique].length > ProcessIncoming.runtime.remainingFlattened.length) {
+    Logger.writeLog('PROI_009', 'partial subchain transaction failure', { txGroup, runtime: ProcessIncoming.runtime })
+    ProcessIncoming.runtime.callback(false, { partialFailure: true })
+    return
+  }
+  Logger.writeLog('PROI_009A', 'complete group failure', { txGroup, runtime: ProcessIncoming.runtime })
+  ProcessIncoming.runtime.txGroupsToReturn.push(currentTxGroup)
+  ProcessIncoming.runtime.remainingTxGroups.splice(0, 1)
+  ProcessIncoming.processPending()
+}
+
+ProcessIncoming.reEncryptAddress = (destination, maxDelay, txGroup, flattened, counter) => {
   try {
-    const newAmount = transaction.amount - (transaction.amount * ProcessIncoming.runtime.settings.anonFeePercent / 100)
     const dataToEncrypt = {
-      a: decryptedAddress,
-      n: newAmount,
-      s: ProcessIncoming.runtime.settings.secret,
+      n: destination, // nav
+      v: flattened, // value
+      s: ProcessIncoming.runtime.settings.secret, // secret
+      t: ProcessIncoming.runtime.currentBlockHeight + Math.round(Math.random() * maxDelay), // time
     }
 
     const encrypted = ProcessIncoming.runtime.outgoingPubKey.encrypt(
@@ -85,21 +98,21 @@ ProcessIncoming.reEncryptAddress = (decryptedAddress, transaction, counter) => {
     )
 
     if (encrypted.length !== privateSettings.encryptionOutput.OUTGOING && counter < privateSettings.maxEncryptionAttempts) {
-      Logger.writeLog('PROI_005', 'public key encryption failed', { transaction, counter, encrypted })
-      ProcessIncoming.reEncryptAddress = (decryptedAddress, transaction, counter + 1)
+      Logger.writeLog('PROI_005', 'public key encryption failed', { maxDelay, txGroup, flattened, counter, encrypted })
+      ProcessIncoming.reEncryptAddress = (destination, maxDelay, txGroup, flattened, counter + 1)
       return
     }
 
     if (encrypted.length !== privateSettings.encryptionOutput.OUTGOING && counter >= privateSettings.maxEncryptionAttempts) {
-      Logger.writeLog('PROI_006', 'max public key encryption failures', { transaction, counter, encrypted })
-      ProcessIncoming.transactionFailed()
+      Logger.writeLog('PROI_006', 'max public key encryption failures', { txGroup, counter, encrypted })
+      ProcessIncoming.partialFailed(txGroup)
       return
     }
 
-    ProcessIncoming.makeSubchainTx(encrypted, transaction)
+    ProcessIncoming.makeSubchainTx(encrypted, txGroup)
   } catch (err) {
-    Logger.writeLog('PROI_007', 'encrypted address invalid', { transaction, error: err })
-    ProcessIncoming.transactionFailed()
+    Logger.writeLog('PROI_007', 'encrypted address invalid', { txGroup, error: err })
+    ProcessIncoming.partialFailed(txGroup)
     return
   }
 }
@@ -117,13 +130,12 @@ ProcessIncoming.makeSubchainTx = (encrypted, transaction) => {
 ProcessIncoming.sentSubToOutgoing = (success, data) => {
   if (!success || !data || !data.sendOutcome) {
     Logger.writeLog('PROI_008', 'failed subClient send to address', { transaction: data.transaction, error: data.error })
-    ProcessIncoming.transactionFailed()
+    ProcessIncoming.partialFailed()
     return
   }
-  ProcessIncoming.runtime.successfulSubTransactions.push(data.transaction)
   ProcessIncoming.runtime.subAddresses.splice(0, 1)
-  ProcessIncoming.runtime.remainingTransactions.splice(0, 1)
-  ProcessIncoming.processPending()
+  ProcessIncoming.runtime.remainingFlattened.splice(0, 1)
+  ProcessIncoming.processPartial()
 }
 
 module.exports = ProcessIncoming

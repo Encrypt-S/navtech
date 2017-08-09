@@ -8,6 +8,9 @@ let SendToAddress = rewire('../src/lib/SendToAddress')
 
 describe('[SendToAddress]', () => {
   describe('(send)', () => {
+    beforeEach(() => { // reset the rewired functions
+      SendToAddress = rewire('../src/lib/SendToAddress')
+    })
     it('should fail on params', (done) => {
       const callback = (success, data) => {
         expect(success).toBe(false)
@@ -67,6 +70,33 @@ describe('[SendToAddress]', () => {
       SendToAddress.__set__('Logger', mockLogger)
       SendToAddress.send({ address, amount, client, transaction, counter: 1 }, callback)
     })
+    it('should have the right params and fake the send', (done) => {
+      const callback = (success, data) => {
+        expect(success).toBe(true)
+        expect(data.transaction).toBe(transaction)
+        expect(data.sendOutcome).toBe('dummy-tx-id')
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'STA_TEST_001')
+        done()
+      }
+      const client = {
+        sendToAddress: () => { return Promise.resolve('TXID') },
+        port: '44444',
+      }
+      const address = 'ADDR'
+      const amount = 10
+      const transaction = { txid: '1234' }
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      const globalSettings = {
+        serverType: 'INCOMING',
+        preventSend: true,
+      }
+      SendToAddress.__set__('globalSettings', globalSettings)
+      SendToAddress.__set__('Logger', mockLogger)
+      SendToAddress.send({ address, amount, client, transaction, counter: 1 }, callback)
+    })
     it('should have the right params and succeed', (done) => {
       const callback = (success, data) => {
         expect(success).toBe(true)
@@ -111,7 +141,7 @@ describe('[SendToAddress]', () => {
     })
   })
   describe('(walletUnlocked)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       SendToAddress = rewire('../src/lib/SendToAddress')
     })
     it('should fail to unlock the wallet', (done) => {

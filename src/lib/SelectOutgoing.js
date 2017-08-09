@@ -37,7 +37,7 @@ SelectOutgoing.run = (options, callback) => {
 SelectOutgoing.pickServer = () => {
   if (SelectOutgoing.runtime.remoteCluster.length < 1) {
     Logger.writeLog('SEL_003', 'no valid outgoing servers found')
-    SelectOutgoing.runtime.callback(false, { returnAllToSenders: true })
+    SelectOutgoing.runtime.callback(false, { returnAllToSenders: true, pause: false })
     return
   }
 

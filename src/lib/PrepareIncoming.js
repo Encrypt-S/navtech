@@ -2,15 +2,17 @@ const lodash = require('lodash')
 const config = require('config')
 
 const globalSettings = config.get('GLOBAL')
+let privateSettings = require('../settings/private.settings.json') // eslint-disable-line
 
 let Logger = require('./Logger.js') // eslint-disable-line
 let NavCoin = require('./NavCoin.js') // eslint-disable-line
-const privateSettings = require('../settings/private.settings.json')
+let FlattenTransactions = require('./FlattenTransactions.js') // eslint-disable-line
+let GroupPartials = require('./GroupPartials.js') // eslint-disable-line
 
 const PrepareIncoming = {}
 
 PrepareIncoming.run = (options, callback) => {
-  const required = ['navClient', 'outgoingNavBalance', 'subBalance']
+  const required = ['navClient', 'outgoingNavBalance', 'subBalance', 'settings']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('PREPI_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ReturnAllToSenders.run' })
@@ -21,6 +23,10 @@ PrepareIncoming.run = (options, callback) => {
     navClient: options.navClient,
     outgoingNavBalance: options.outgoingNavBalance,
     subBalance: options.subBalance,
+    currentFlattened: {},
+    currentBatch: [],
+    numFlattened: 0,
+    settings: options.settings,
   }
 
   PrepareIncoming.getUnspent()
@@ -40,7 +46,7 @@ PrepareIncoming.getUnspent = () => {
     PrepareIncoming.unspentFiltered)
   }).catch((err) => {
     Logger.writeLog('PREPI_002', 'failed to list unspent', err)
-    PrepareIncoming.runtime.callback(false, { message: 'failed to list unspent' })
+    PrepareIncoming.runtime.callback(false, { message: 'failed to list unspent', err })
     return
   })
 }
@@ -51,10 +57,33 @@ PrepareIncoming.unspentFiltered = (success, data) => {
     PrepareIncoming.runtime.callback(false, { message: 'no current pending to return' })
     return
   }
-
   PrepareIncoming.runtime.currentPending = data.currentPending
+  GroupPartials.run({
+    currentPending: data.currentPending,
+    client: PrepareIncoming.runtime.navClient,
+  }, PrepareIncoming.partialsGrouped)
+}
+
+PrepareIncoming.partialsGrouped = (success, data) => {
+  if (!success || !data) {
+    Logger.writeLog('PREPI_003A', 'GroupPartials failed', { success, data })
+    PrepareIncoming.runtime.callback(false, {
+      pendingToReturn: data ? data.transactionsToReturn : null,
+    })
+  }
+
+  if (!data.readyToProcess) {
+    Logger.writeLog('PREPI_003AA', 'GroupPartials failed to return correct data', { data })
+    // @TODO handle this return case
+    PrepareIncoming.runtime.callback(false, {
+      pendingToReturn: data.transactionsToReturn ? data.transactionsToReturn : null,
+    })
+    return
+  }
+  PrepareIncoming.runtime.transactionsToReturn = data.transactionsToReturn ? data.transactionsToReturn : null
+
   PrepareIncoming.pruneUnspent({
-    currentPending: PrepareIncoming.runtime.currentPending,
+    readyToProcess: data.readyToProcess,
     client: PrepareIncoming.runtime.navClient,
     subBalance: PrepareIncoming.runtime.subBalance,
     maxAmount: PrepareIncoming.runtime.outgoingNavBalance,
@@ -62,42 +91,111 @@ PrepareIncoming.unspentFiltered = (success, data) => {
 }
 
 PrepareIncoming.pruneUnspent = (options, callback) => {
-  if (!options.currentPending ||
+  if (!options.readyToProcess ||
       !parseFloat(options.subBalance) ||
       !parseFloat(options.maxAmount)) {
-    Logger.writeLog('NAV_006', 'pruneIncomingUnspent invalid params', { options })
+    Logger.writeLog('PREPI_003B', 'pruneIncomingUnspent invalid params', { options })
     callback(false, { message: 'invalid params' })
     return
   }
   const currentBatch = []
   let hasPruned = false
   let sumPending = 0
-  for (const pending of options.currentPending) {
+  lodash.forEach(options.readyToProcess, (txGroup) => {
     if ((currentBatch.length + 1) * (parseFloat(privateSettings.subCoinsPerTx) + parseFloat(privateSettings.subChainTxFee))
         <= options.subBalance &&
-        sumPending + pending.amount < parseFloat(options.maxAmount) &&
-        currentBatch.length < privateSettings.maxAddresses) {
-      sumPending += pending.amount
+        sumPending + txGroup.amount < parseFloat(options.maxAmount)) {
+      sumPending += txGroup.amount
       hasPruned = true
-      currentBatch.push(pending)
+      currentBatch.push(txGroup)
     }
-  }
+  })
   if (hasPruned) {
     callback(true, { currentBatch, sumPending })
   } else {
-    callback(false, { message: 'no pruned' })
+    callback(true, { message: 'no pruned' })
   }
 }
 
 PrepareIncoming.unspentPruned = (success, data) => {
   if (!success || !data || !data.currentBatch || data.currentBatch.length < 1) {
-    Logger.writeLog('PREPI_003', 'failed to prune unspent', { success, data })
-    PrepareIncoming.runtime.callback(false, { message: 'failed to prune unspent' })
+    if (!PrepareIncoming.runtime.transactionsToReturn || PrepareIncoming.runtime.transactionsToReturn < 1) {
+      Logger.writeLog('PREPI_003D', 'no pruned and none to return', { success, data })
+      PrepareIncoming.runtime.callback(false, {
+        pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+      })
+      return
+    }
+    Logger.writeLog('PREPI_003C', 'no pruned but some to return', { success, data })
+    PrepareIncoming.runtime.callback(true, {
+      pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+    })
+    return
+  }
+  PrepareIncoming.runtime.remainingToFlatten = data.currentBatch.slice(0)
+  PrepareIncoming.runtime.currentBatch = data.currentBatch.slice(0)
+  FlattenTransactions.incoming({
+    amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+    anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
+  }, PrepareIncoming.flattened)
+  return
+}
+
+PrepareIncoming.flattened = (success, data) => {
+  if (!success || !data || !data.flattened) {
+    Logger.writeLog('PREPI_004', 'failed to flatten transactions', {
+      success,
+      data,
+      runtime: PrepareIncoming.runtime,
+    })
+
+    // if it fails, move onto the next transaction
+    // this will get rejected after the block timeout if it continually fails
+    PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
+    if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
+      PrepareIncoming.runtime.callback(true, {
+        currentBatch: PrepareIncoming.runtime.currentBatch,
+        currentFlattened: PrepareIncoming.runtime.currentFlattened,
+        numFlattened: PrepareIncoming.runtime.numFlattened,
+        pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+      })
+      return
+    }
+    FlattenTransactions.incoming({
+      amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+      anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
+    }, PrepareIncoming.flattened)
     return
   }
 
-  PrepareIncoming.runtime.callback(true, { currentBatch: data.currentBatch })
-  return
+  if (PrepareIncoming.runtime.numFlattened + data.flattened.length >= privateSettings.maxAddresses) {
+    PrepareIncoming.runtime.callback(true, {
+      currentBatch: PrepareIncoming.runtime.currentBatch,
+      currentFlattened: PrepareIncoming.runtime.currentFlattened,
+      numFlattened: PrepareIncoming.runtime.numFlattened,
+      pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+    })
+    return
+  }
+
+  PrepareIncoming.runtime.numFlattened += data.flattened.length
+  PrepareIncoming.runtime.currentFlattened[PrepareIncoming.runtime.remainingToFlatten[0].unique] = data.flattened
+  PrepareIncoming.runtime.remainingToFlatten.splice(0, 1)
+
+  if (PrepareIncoming.runtime.remainingToFlatten.length === 0) {
+    PrepareIncoming.runtime.callback(true, {
+      currentBatch: PrepareIncoming.runtime.currentBatch,
+      currentFlattened: PrepareIncoming.runtime.currentFlattened,
+      numFlattened: PrepareIncoming.runtime.numFlattened,
+      pendingToReturn: PrepareIncoming.runtime.transactionsToReturn,
+    })
+    return
+  }
+
+  FlattenTransactions.incoming({
+    amountToFlatten: PrepareIncoming.runtime.remainingToFlatten[0].amount,
+    anonFeePercent: PrepareIncoming.runtime.settings.anonFeePercent,
+  }, PrepareIncoming.flattened)
 }
 
 module.exports = PrepareIncoming

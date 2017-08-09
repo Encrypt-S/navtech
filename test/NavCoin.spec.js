@@ -52,7 +52,7 @@ describe('[NavCoin]', () => {
     })
   })
   describe('(lockWallet)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       NavCoin = rewire('../src/lib/NavCoin')
     })
     it('should fail on params', (done) => {

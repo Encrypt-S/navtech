@@ -143,14 +143,13 @@ describe('[EncryptionKeys]', () => {
       EncryptionKeys.__set__('ursa', ursaMock)
       const callback = (success, data) => {
         expect(success).toBe(true)
-        console.log(data)
         done()
       }
       EncryptionKeys.testKeyPair({ privKeyFile, pubKeyFile }, callback)
     })
   })
   describe('(getEncryptionKeys)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       EncryptionKeys = rewire('../src/lib/EncryptionKeys')
     })
     it('should find the keys and return them', (done) => {
@@ -161,7 +160,6 @@ describe('[EncryptionKeys]', () => {
         expect(success).toBe(true)
         expect(data.privKeyFile).toEqual(privKeyFile)
         expect(data.pubKeyFile).toEqual(pubKeyFile)
-        console.log(data)
         done()
       }
       EncryptionKeys.getEncryptionKeys({}, callback)
@@ -181,7 +179,7 @@ describe('[EncryptionKeys]', () => {
     })
   })
   describe('(generateKeys)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       EncryptionKeys = rewire('../src/lib/EncryptionKeys')
     })
     it('should fail on params', (done) => {
@@ -225,7 +223,7 @@ describe('[EncryptionKeys]', () => {
     })
   })
   describe('(findKeysToRemove)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       EncryptionKeys = rewire('../src/lib/EncryptionKeys')
     })
     it('should fail on params', (done) => {

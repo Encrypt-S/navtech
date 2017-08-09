@@ -52,7 +52,7 @@ describe('[ProcessOutgoing]', () => {
     })
   })
   describe('(processPending)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should run the callback when no more transactions are left to process', (done) => {
@@ -74,46 +74,37 @@ describe('[ProcessOutgoing]', () => {
       ProcessOutgoing.__set__('Logger', mockLogger)
       ProcessOutgoing.processPending()
     })
-    it('should reset the partial transaction array and create random transactions', (done) => {
-      const remainingTransactions = [
-        {
-          decrypted: {
-            n: 10,
-            a: 'XYZ',
-          },
-        },
-        {
-          decrypted: {
-            n: 100,
-            a: 'XYZ',
-          },
-        },
-      ]
+    it('should run the SendToAddress.send when it has remaining transactions to process', (done) => {
       ProcessOutgoing.runtime = {
-        remainingTransactions,
-        successfulTransactions: [],
-        failedTransactions: [],
-        callback: () => {},
+        remainingTransactions: [
+          { txid: 1234, decrypted: { n: 'ASDF', v: 333 } },
+          { txid: 5678, decrypted: { n: 'QWER', v: 222 } },
+        ],
+        successfulTransactions: [1, 2, 3],
+        failedTransactions: [4, 5, 6],
+        navClient: { getInfo: true },
       }
-      const RandomizeTransactions = {
-        outgoing: (settings, callback) => {
-          expect(settings.transaction).toBe(remainingTransactions[0])
-          expect(settings.amount).toBe(10)
-          expect(settings.address).toBe('XYZ')
-          expect(callback).toBe(ProcessOutgoing.amountsRandomized)
+      const SendToAddress = {
+        send: (options, callback) => {
+          expect(callback).toBe(ProcessOutgoing.sentNav)
+          expect(options.client).toBe(ProcessOutgoing.runtime.navClient)
+          expect(options.address).toBe('ASDF')
+          expect(options.amount).toBe(333)
+          expect(options.transaction).toEqual({ txid: 1234, decrypted: { n: 'ASDF', v: 333 } })
           done()
         },
       }
+
       const mockLogger = {
         writeLog: sinon.spy(),
       }
       ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.__set__('RandomizeTransactions', RandomizeTransactions)
+      ProcessOutgoing.__set__('SendToAddress', SendToAddress)
       ProcessOutgoing.processPending()
     })
   })
   describe('(transactionFailed)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should trim the failed transaction and move onto the next one', (done) => {
@@ -138,43 +129,8 @@ describe('[ProcessOutgoing]', () => {
       ProcessOutgoing.transactionFailed()
     })
   })
-  describe('(amountsRandomized)', () => {
-    before(() => { // reset the rewired functions
-      ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
-    })
-    it('should fail to randomize the transactions', (done) => {
-      const mockLogger = {
-        writeLog: sinon.spy(),
-      }
-
-      ProcessOutgoing.transactionFailed = () => {
-        sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROO_002')
-        done()
-      }
-
-      ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.amountsRandomized(false, { junkParam: 1234 })
-    })
-    it('should randomize the transactions and call createNavTransactions', (done) => {
-      const mockLogger = {
-        writeLog: sinon.spy(),
-      }
-
-      ProcessOutgoing.runtime = {}
-
-      ProcessOutgoing.createNavTransactions = () => {
-        expect(ProcessOutgoing.runtime.partialTransactions).toEqual([1, 2, 3])
-        sinon.assert.notCalled(mockLogger.writeLog)
-        done()
-      }
-
-      ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.amountsRandomized(true, { partialTransactions: [1, 2, 3] })
-    })
-  })
   describe('(mockSend)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
     it('should pretend a successful send happened for testing purposes', (done) => {
@@ -184,15 +140,15 @@ describe('[ProcessOutgoing]', () => {
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
@@ -218,227 +174,168 @@ describe('[ProcessOutgoing]', () => {
       ProcessOutgoing.mockSend()
     })
   })
-  describe('(createNavTransactions)', () => {
-    before(() => { // reset the rewired functions
+  describe('(sentNav)', () => {
+    beforeEach(() => { // reset the rewired functions
       ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
     })
-    it('should still have pending partials and call the send function', (done) => {
+    it('should fail to send partial nav (returned false) and try the next one', (done) => {
       const mockLogger = {
         writeLog: sinon.spy(),
       }
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
-        },
-      }
-      const remainingTransactions = [
-        tx1,
-      ]
-      ProcessOutgoing.runtime = {
-        remainingTransactions,
-        partialTransactions: [1, 2, 3],
-        successfulTransactions: [],
-        failedTransactions: [],
-        navClient: () => {},
-      }
-
-      const SendToAddress = {
-        send: (options, callback) => {
-          expect(options.client).toBe(ProcessOutgoing.runtime.navClient)
-          expect(options.address).toBe('XYZ')
-          expect(options.amount).toBe(1)
-          expect(options.transaction).toBe(tx1)
-          expect(callback).toBe(ProcessOutgoing.sentPartialNav)
-          sinon.assert.notCalled(mockLogger.writeLog)
-          done()
-        },
-      }
-
-      ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.__set__('SendToAddress', SendToAddress)
-      ProcessOutgoing.createNavTransactions(false, { junkParam: 1234 })
-    })
-    it('should recognize that all the partials have been sent and move onto the next record', (done) => {
-      const mockLogger = {
-        writeLog: sinon.spy(),
-      }
-      const tx1 = {
-        transaction: { txid: '1234' },
-        decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
         tx1,
         tx2,
       ]
+      ProcessOutgoing.processPending = () => {
+        expect(ProcessOutgoing.runtime.failedTransactions).toEqual([tx1])
+        expect(ProcessOutgoing.runtime.remainingTransactions).toEqual([tx2])
+        expect(ProcessOutgoing.runtime.successfulTransactions).toEqual([])
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROO_004')
+        done()
+      }
       ProcessOutgoing.runtime = {
         remainingTransactions,
-        partialTransactions: [],
-        successfulTransactions: [],
         failedTransactions: [],
+        successfulTransactions: [],
         callback: () => {},
       }
 
+      ProcessOutgoing.__set__('Logger', mockLogger)
+      ProcessOutgoing.sentNav(false, { junkParam: 1234 })
+    })
+    it('should fail to send partial nav (bad data) and try the next one', (done) => {
+      const mockLogger = {
+        writeLog: sinon.spy(),
+      }
+      const tx1 = {
+        transaction: { txid: '1234' },
+        decrypted: {
+          v: 10,
+          n: 'XYZ',
+        },
+      }
+      const tx2 = {
+        transaction: { txid: '4321' },
+        decrypted: {
+          v: 100,
+          n: 'ZYX',
+        },
+      }
+      const remainingTransactions = [
+        tx1,
+        tx2,
+      ]
       ProcessOutgoing.processPending = () => {
-        expect(ProcessOutgoing.runtime.successfulTransactions).toEqual([{ transaction: tx1.transaction }])
+        expect(ProcessOutgoing.runtime.failedTransactions).toEqual([tx1])
         expect(ProcessOutgoing.runtime.remainingTransactions).toEqual([tx2])
+        expect(ProcessOutgoing.runtime.successfulTransactions).toEqual([])
         sinon.assert.calledOnce(mockLogger.writeLog)
-        sinon.assert.calledWith(mockLogger.writeLog, 'PROO_003')
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROO_004')
         done()
       }
+      ProcessOutgoing.runtime = {
+        remainingTransactions,
+        failedTransactions: [],
+        successfulTransactions: [],
+        callback: () => {},
+      }
 
       ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.createNavTransactions(false, { junkParam: 1234 })
+      ProcessOutgoing.sentNav(true, { junkParam: 1234 })
     })
-  })
-  describe('(sentPartialNav)', () => {
-    before(() => { // reset the rewired functions
-      ProcessOutgoing = rewire('../src/lib/ProcessOutgoing')
-    })
-    it('should fail to send partial nav (returned false) and exit the current process', (done) => {
+    it('should fail to send partial (no data) nav and try the next one', (done) => {
       const mockLogger = {
         writeLog: sinon.spy(),
       }
       const tx1 = {
         transaction: { txid: '1234' },
         decrypted: {
-          n: 10,
-          a: 'XYZ',
+          v: 10,
+          n: 'XYZ',
         },
       }
       const tx2 = {
         transaction: { txid: '4321' },
         decrypted: {
-          n: 100,
-          a: 'ZYX',
+          v: 100,
+          n: 'ZYX',
         },
       }
       const remainingTransactions = [
         tx1,
         tx2,
       ]
+      ProcessOutgoing.processPending = () => {
+        expect(ProcessOutgoing.runtime.failedTransactions).toEqual([tx1])
+        expect(ProcessOutgoing.runtime.remainingTransactions).toEqual([tx2])
+        expect(ProcessOutgoing.runtime.successfulTransactions).toEqual([])
+        sinon.assert.calledOnce(mockLogger.writeLog)
+        sinon.assert.calledWith(mockLogger.writeLog, 'PROO_004')
+        done()
+      }
       ProcessOutgoing.runtime = {
         remainingTransactions,
-        partialTransactions: [2, 3, 4],
         failedTransactions: [],
-        callback: (success, data) => {
-          expect(success).toBe(false)
-          expect(data.failedTransaction).toBe(tx1)
-          expect(data.remainingPartials).toEqual([2, 3, 4])
-          sinon.assert.calledOnce(mockLogger.writeLog)
-          sinon.assert.calledWith(mockLogger.writeLog, 'PROO_004')
-          done()
-        },
+        successfulTransactions: [],
+        callback: () => {},
       }
 
       ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.sentPartialNav(false, { junkParam: 1234 })
-    })
-    it('should fail to send partial nav (bad data) and exit the current process', (done) => {
-      const mockLogger = {
-        writeLog: sinon.spy(),
-      }
-      const tx1 = {
-        transaction: { txid: '1234' },
-        decrypted: {
-          n: 10,
-          a: 'XYZ',
-        },
-      }
-      const tx2 = {
-        transaction: { txid: '4321' },
-        decrypted: {
-          n: 100,
-          a: 'ZYX',
-        },
-      }
-      const remainingTransactions = [
-        tx1,
-        tx2,
-      ]
-      ProcessOutgoing.runtime = {
-        remainingTransactions,
-        partialTransactions: [2, 3, 4],
-        failedTransactions: [],
-        callback: (success, data) => {
-          expect(success).toBe(false)
-          expect(data.failedTransaction).toBe(tx1)
-          expect(data.remainingPartials).toEqual([2, 3, 4])
-          sinon.assert.calledOnce(mockLogger.writeLog)
-          sinon.assert.calledWith(mockLogger.writeLog, 'PROO_004')
-          done()
-        },
-      }
-
-      ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.sentPartialNav(true, { junkParam: 1234 })
-    })
-    it('should fail to send partial (no data) nav and exit the current process', (done) => {
-      const mockLogger = {
-        writeLog: sinon.spy(),
-      }
-      const tx1 = {
-        transaction: { txid: '1234' },
-        decrypted: {
-          n: 10,
-          a: 'XYZ',
-        },
-      }
-      const tx2 = {
-        transaction: { txid: '4321' },
-        decrypted: {
-          n: 100,
-          a: 'ZYX',
-        },
-      }
-      const remainingTransactions = [
-        tx1,
-        tx2,
-      ]
-      ProcessOutgoing.runtime = {
-        remainingTransactions,
-        partialTransactions: [2, 3, 4],
-        failedTransactions: [],
-        callback: (success, data) => {
-          expect(success).toBe(false)
-          expect(data.failedTransaction).toBe(tx1)
-          expect(data.remainingPartials).toEqual([2, 3, 4])
-          sinon.assert.calledOnce(mockLogger.writeLog)
-          sinon.assert.calledWith(mockLogger.writeLog, 'PROO_004')
-          done()
-        },
-      }
-
-      ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.sentPartialNav(true)
+      ProcessOutgoing.sentNav(true)
     })
     it('should successfully send the partial nav and try the next partial', (done) => {
       const mockLogger = {
         writeLog: sinon.spy(),
       }
+      const tx1 = {
+        transaction: { txid: '1234' },
+        decrypted: {
+          v: 10,
+          n: 'XYZ',
+        },
+      }
+      const tx2 = {
+        transaction: { txid: '4321' },
+        decrypted: {
+          v: 100,
+          n: 'ZYX',
+        },
+      }
+      const remainingTransactions = [
+        tx1,
+        tx2,
+      ]
       ProcessOutgoing.runtime = {
-        partialTransactions: [2, 3, 4],
+        remainingTransactions,
+        failedTransactions: [],
+        successfulTransactions: [],
       }
 
-      ProcessOutgoing.createNavTransactions = () => {
-        expect(ProcessOutgoing.runtime.partialTransactions).toEqual([3, 4])
+      ProcessOutgoing.processPending = () => {
+        expect(ProcessOutgoing.runtime.failedTransactions).toEqual([])
+        expect(ProcessOutgoing.runtime.successfulTransactions).toEqual([tx1])
+        expect(ProcessOutgoing.runtime.remainingTransactions).toEqual([tx2])
         sinon.assert.notCalled(mockLogger.writeLog)
         done()
       }
 
       ProcessOutgoing.__set__('Logger', mockLogger)
-      ProcessOutgoing.sentPartialNav(true, { sendOutcome: '1234' })
+      ProcessOutgoing.sentNav(true, { sendOutcome: '1234' })
     })
   })
 })

@@ -7,7 +7,7 @@ let NavCoin = require('./NavCoin.js') //eslint-disable-line
 const RetrieveSubchainAddresses = {}
 
 RetrieveSubchainAddresses.run = (options, callback) => {
-  const required = ['subClient', 'chosenOutgoing', 'currentBatch']
+  const required = ['subClient', 'chosenOutgoing', 'numAddresses']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('RSC_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to RetrieveSubchainAddresses.run' })
@@ -17,7 +17,7 @@ RetrieveSubchainAddresses.run = (options, callback) => {
     callback,
     subClient: options.subClient,
     chosenOutgoing: options.chosenOutgoing,
-    currentBatch: options.currentBatch,
+    numAddresses: options.numAddresses,
   }
 
   RetrieveSubchainAddresses.getSubAddresses()
@@ -37,7 +37,7 @@ RetrieveSubchainAddresses.getSubAddresses = () => {
     form: {
       type: 'SUBCHAIN',
       account: 'OUTGOING',
-      num_addresses: RetrieveSubchainAddresses.runtime.currentBatch.length,
+      num_addresses: RetrieveSubchainAddresses.runtime.numAddresses,
     },
   }
 
@@ -85,10 +85,10 @@ RetrieveSubchainAddresses.checkSubAddresses = (outgoingSubAddresses) => {
     RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server must provide at least one sub address' })
     return
   }
-  if (outgoingSubAddresses.length < RetrieveSubchainAddresses.runtime.currentBatch.length) {
+  if (outgoingSubAddresses.length < RetrieveSubchainAddresses.runtime.numAddresses) {
     Logger.writeLog('RSC_008', 'outgoing server did not provide enough sub addresses', {
       subAddressesLength: outgoingSubAddresses.length,
-      currentBatchLength: RetrieveSubchainAddresses.runtime.currentBatch.length,
+      numAddresses: RetrieveSubchainAddresses.runtime.numAddresses,
     })
     RetrieveSubchainAddresses.runtime.callback(false, { message: 'outgoing server did not provide enough sub addresses' })
     return

@@ -1,9 +1,9 @@
 const lodash = require('lodash')
 
-const Logger = require('./Logger.js')
-const RandomizeTransactions = require('./RandomizeTransactions.js')
-const privateSettings = require('../settings/private.settings.json')
-const SendRawTransaction = require('./SendRawTransaction.js')
+let Logger = require('./Logger.js') //eslint-disable-line
+let RandomizeTransactions = require('./RandomizeTransactions.js') //eslint-disable-line
+let privateSettings = require('../settings/private.settings.json') //eslint-disable-line
+let SendRawTransaction = require('./SendRawTransaction.js') //eslint-disable-line
 
 const SpendToHolding = {}
 

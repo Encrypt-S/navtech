@@ -1,4 +1,9 @@
 {
+  "version": {
+    "major": 1,
+    "minor": 2,
+    "patch": 0
+  },
   "keyFolders": {
     "private": {
       "path": "./keys/private/",
@@ -16,11 +21,11 @@
     "OUTGOING": "outgoingAccount",
     "HOLDING": "holdingAccount"
   },
-  "maxAddresses": 250,
-  "maxHolding": 100,
+  "maxAddresses": 1000,
+  "maxHolding": 200,
   "minNavTransactions": 3,
   "maxNavTransactions": 8,
-  "txFee": 0.001,
+  "txFee": 0.0001,
   "maxEncryptionAttempts": 10,
   "encryptionStrength": {
     "INCOMING": 2048,
@@ -30,9 +35,11 @@
     "INCOMING": 344,
     "OUTGOING": 172
   },
-  "subCoinsPerTx": 10,
-  "subChainTxFee": 0.001,
+  "subCoinsPerTx": 1,
+  "subChainTxFee": 0.0001,
   "minConfs": 1,
+  "maxConfs": 60,
+  "maxQueue": 120,
   "blockThreshold": {
     "checking": 5,
     "processing": 3

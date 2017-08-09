@@ -68,7 +68,7 @@ describe('[ReturnSubnav]', () => {
     })
   })
   describe('(decodeOriginRaw)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnToSender = rewire('../src/lib/ReturnToSender')
     })
     it('should fail to decode the raw transaction', (done) => {
@@ -117,7 +117,7 @@ describe('[ReturnSubnav]', () => {
     })
   })
   describe('(decodeOriginRaw)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnToSender = rewire('../src/lib/ReturnToSender')
     })
     it('should fail to decode the raw transaction', (done) => {
@@ -171,7 +171,7 @@ describe('[ReturnSubnav]', () => {
     })
   })
   describe('(decodeOriginInputRaw)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnToSender = rewire('../src/lib/ReturnToSender')
     })
     it('should fail to decode the raw transaction', (done) => {
@@ -233,7 +233,7 @@ describe('[ReturnSubnav]', () => {
     })
   })
   describe('(buildTransaction)', () => {
-    before(() => { // reset the rewired functions
+    beforeEach(() => { // reset the rewired functions
       ReturnToSender = rewire('../src/lib/ReturnToSender')
     })
     it('should build the transaction and call createRaw', (done) => {

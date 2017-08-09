@@ -63,7 +63,8 @@ EncryptedData.decryptData = (options, callback) => {
           const key = ursa.createPrivateKey(fs.readFileSync(keyFile))
           const msg = key.decrypt(options.encryptedData, 'base64', 'utf8', ursa.RSA_PKCS1_PADDING)
           successfulDecryption = true
-          decrypted = (globalSettings.serverType === 'INCOMING') ? msg : JSON.parse(msg)
+          // Logger.writeLog('ECD_TEST', 'decrypted', { msg })
+          decrypted = JSON.parse(msg)
         } catch (err2) {
           // do nothing
         }
