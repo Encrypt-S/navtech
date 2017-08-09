@@ -101,13 +101,11 @@ describe('[OutgoingServer]', () => {
       done()
     })
     it('should pass preflight, set balances and call the refill function', (done) => {
-      OutgoingServer.navClient = { getInfo: () => true }
-      OutgoingServer.subClient = { getInfo: () => true }
-      const PrepareOutgoing = {
+      OutgoingServer.navClient = { listUnspent: () => true }
+      OutgoingServer.subClient = { listUnspent: () => true }
+      const PayoutFee = {
         run: (options, callback) => {
           expect(options.navClient).toBe(OutgoingServer.navClient)
-          expect(callback).toBe(OutgoingServer.currentBatchPrepared)
-          expect(OutgoingServer.processing).toBe(true)
           expect(OutgoingServer.runtime).toEqual({
             navBalance: 1000,
             subBalance: 100,
@@ -118,7 +116,7 @@ describe('[OutgoingServer]', () => {
       OutgoingServer.processing = true
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
-      OutgoingServer.__set__('PrepareOutgoing', PrepareOutgoing)
+      OutgoingServer.__set__('PayoutFee', PayoutFee)
       OutgoingServer.preFlightComplete(true, {
         navBalance: 1000,
         subBalance: 100,
@@ -207,13 +205,12 @@ describe('[OutgoingServer]', () => {
       OutgoingServer.processing = true
       OutgoingServer.paused = false
 
-      const PayoutFee = {
+      const ReturnSubnav = {
         run: (options, callback) => {
-          expect(options.navClient).toBe(OutgoingServer.navClient)
-          expect(callback).toBe(OutgoingServer.feePaid)
+          expect(options.subClient).toBe(OutgoingServer.subClient)
+          expect(callback).toBe(OutgoingServer.subnavReturned)
           expect(OutgoingServer.processing).toBe(true)
           expect(OutgoingServer.paused).toBe(false)
-          expect(OutgoingServer.runtime.successfulTransactions).toEqual([1, 2, 3])
           sinon.assert.calledOnce(mockLogger.writeLog)
           sinon.assert.calledWith(mockLogger.writeLog, 'OUT_005A')
           done()
@@ -222,7 +219,7 @@ describe('[OutgoingServer]', () => {
 
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
-      OutgoingServer.__set__('PayoutFee', PayoutFee)
+      OutgoingServer.__set__('ReturnSubnav', ReturnSubnav)
       OutgoingServer.transactionsProcessed(true, { successfulTransactions: [1, 2, 3], failedTransactions: [4, 5, 6] })
     })
     it('should fail to send any transactions and pause', (done) => {
@@ -242,14 +239,14 @@ describe('[OutgoingServer]', () => {
       sinon.assert.calledWith(mockLogger.writeLog, 'OUT_005')
       done()
     })
-    it('should get the current batch and payout the fee', (done) => {
+    it('should get the current batch and return the subnav', (done) => {
       OutgoingServer.processing = true
       OutgoingServer.paused = false
 
-      const PayoutFee = {
+      const ReturnSubnav = {
         run: (options, callback) => {
-          expect(options.navClient).toBe(OutgoingServer.navClient)
-          expect(callback).toBe(OutgoingServer.feePaid)
+          expect(options.subClient).toBe(OutgoingServer.subClient)
+          expect(callback).toBe(OutgoingServer.subnavReturned)
           expect(OutgoingServer.processing).toBe(true)
           expect(OutgoingServer.paused).toBe(false)
           expect(OutgoingServer.runtime.successfulTransactions).toEqual([1, 2, 3])
@@ -259,7 +256,7 @@ describe('[OutgoingServer]', () => {
 
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
-      OutgoingServer.__set__('PayoutFee', PayoutFee)
+      OutgoingServer.__set__('ReturnSubnav', ReturnSubnav)
       OutgoingServer.transactionsProcessed(true, { successfulTransactions: [1, 2, 3] })
     })
   })
@@ -271,10 +268,16 @@ describe('[OutgoingServer]', () => {
       OutgoingServer.processing = true
       OutgoingServer.paused = false
 
-      const ReturnSubnav = {
+      const mockClient = {
+        getBalance: () => { return Promise.resolve(50000) },
+      }
+
+      const PrepareOutgoing = {
         run: (options, callback) => {
           expect(options.subClient).toBe(OutgoingServer.subClient)
-          expect(callback).toBe(OutgoingServer.subnavReturned)
+          expect(options.navClient).toBe(OutgoingServer.navClient)
+          expect(callback).toBe(OutgoingServer.currentBatchPrepared)
+          expect(options.navBalance).toBe(50000)
           expect(OutgoingServer.processing).toBe(true)
           expect(OutgoingServer.paused).toBe(false)
           sinon.assert.calledOnce(mockLogger.writeLog)
@@ -285,17 +288,24 @@ describe('[OutgoingServer]', () => {
 
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
-      OutgoingServer.__set__('ReturnSubnav', ReturnSubnav)
+      OutgoingServer.__set__('PrepareOutgoing', PrepareOutgoing)
+      OutgoingServer.navClient = mockClient
       OutgoingServer.feePaid(false, { transaction: 123, error: 'failed' })
     })
     it('should continue to return the subnav if it paid the fee', (done) => {
       OutgoingServer.processing = true
       OutgoingServer.paused = false
 
-      const ReturnSubnav = {
+      const mockClient = {
+        getBalance: () => { return Promise.resolve(50000) },
+      }
+
+      const PrepareOutgoing = {
         run: (options, callback) => {
           expect(options.subClient).toBe(OutgoingServer.subClient)
-          expect(callback).toBe(OutgoingServer.subnavReturned)
+          expect(options.navClient).toBe(OutgoingServer.navClient)
+          expect(options.navBalance).toBe(50000)
+          expect(callback).toBe(OutgoingServer.currentBatchPrepared)
           expect(OutgoingServer.processing).toBe(true)
           expect(OutgoingServer.paused).toBe(false)
           sinon.assert.notCalled(mockLogger.writeLog)
@@ -305,8 +315,24 @@ describe('[OutgoingServer]', () => {
 
       const mockLogger = { writeLog: sinon.spy() }
       OutgoingServer.__set__('Logger', mockLogger)
-      OutgoingServer.__set__('ReturnSubnav', ReturnSubnav)
+      OutgoingServer.__set__('PrepareOutgoing', PrepareOutgoing)
+      OutgoingServer.navClient = mockClient
       OutgoingServer.feePaid(true, { transaction: 123, error: 'failed' })
+    })
+    it('should stop if it couldnt get the balance after sending the fee', (done) => {
+      OutgoingServer.processing = true
+      OutgoingServer.paused = false
+
+      const mockClient = {
+        getBalance: () => { return Promise.reject({ err: { code: -22 } }) },
+      }
+
+      const mockLogger = { writeLog: sinon.spy() }
+      OutgoingServer.__set__('Logger', mockLogger)
+      OutgoingServer.navClient = mockClient
+      OutgoingServer.feePaid(true, { transaction: 123, error: 'failed' })
+      done()
+
     })
   })
   describe('(subnavReturned)', () => {

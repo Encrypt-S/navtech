@@ -73,12 +73,31 @@ OutgoingServer.preFlightComplete = (success, data) => {
   }
   OutgoingServer.runtime.navBalance = data.navBalance
   OutgoingServer.runtime.subBalance = data.subBalance
-  PrepareOutgoing.run({
+  PayoutFee.run({
     navClient: OutgoingServer.navClient,
-    subClient: OutgoingServer.subClient,
-    navBalance: data.navBalance,
     settings,
-  }, OutgoingServer.currentBatchPrepared)
+  }, OutgoingServer.feePaid)
+}
+
+OutgoingServer.feePaid = (success, data) => {
+  if (!success) {
+    Logger.writeLog('OUT_006', 'failed nav send to txfee address', {
+      data,
+    }, true)
+  }
+  OutgoingServer.navClient.getBalance().then((navBalance) => {
+    OutgoingServer.runtime.navBalance = navBalance
+    PrepareOutgoing.run({
+      navClient: OutgoingServer.navClient,
+      subClient: OutgoingServer.subClient,
+      navBalance,
+      settings,
+    }, OutgoingServer.currentBatchPrepared)
+  }).catch((err) => {
+    Logger.writeLog('OUT_006A', 'failed nav send to getbalance after sending tx-fee', { data, err })
+    OutgoingServer.processing = false
+    return
+  })
 }
 
 OutgoingServer.currentBatchPrepared = (success, data) => {
@@ -120,19 +139,6 @@ OutgoingServer.transactionsProcessed = (success, data) => {
   }
 
   OutgoingServer.runtime.successfulTransactions = data.successfulTransactions
-
-  PayoutFee.run({
-    navClient: OutgoingServer.navClient,
-    settings,
-  }, OutgoingServer.feePaid)
-}
-
-OutgoingServer.feePaid = (success, data) => {
-  if (!success) {
-    Logger.writeLog('OUT_006', 'failed nav send to txfee address', {
-      data,
-    }, true)
-  }
 
   ReturnSubnav.run({
     transactions: OutgoingServer.runtime.successfulTransactions,

@@ -22,7 +22,13 @@ PayoutFee.run = (options, callback) => {
 }
 
 PayoutFee.send = () => {
-  PayoutFee.runtime.navClient.getBalance().then((navBalance) => {
+  PayoutFee.runtime.navClient.listUnspent(20).then((unspent) => {
+    let navBalanceSat = 0
+    const satoshiFactor = 100000000
+    for (const pending of unspent) {
+      navBalanceSat += Math.round(pending.amount * satoshiFactor)
+    }
+    const navBalance = navBalanceSat / satoshiFactor
     if (navBalance < PayoutFee.runtime.settings.navPoolAmount) {
       Logger.writeLog('PAY_002', 'nav pool balance less than expected', {
         navPoolAmount: PayoutFee.runtime.settings.navPoolAmount,
