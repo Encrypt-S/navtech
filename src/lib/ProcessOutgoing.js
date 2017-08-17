@@ -1,7 +1,7 @@
 const lodash = require('lodash')
 
 let Logger = require('./Logger.js') // eslint-disable-line
-let RandomizeTransactions = require('./RandomizeTransactions.js') // eslint-disable-line
+// let RandomizeTransactions = require('./RandomizeTransactions.js') // eslint-disable-line
 let SendToAddress = require('./SendToAddress.js') // eslint-disable-line
 
 const ProcessOutgoing = {}
