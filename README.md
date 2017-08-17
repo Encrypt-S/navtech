@@ -10,7 +10,6 @@
 | addanonserver | `95.183.53.184:3000` |
 | addanonserver | `95.183.52.28:3000` |
 | addanonserver | `95.183.52.29:3000` |
-| anonhash | `000c17f28eaa71f48de6d8856fc3a22f` |
 
 ## RECOMMENDED SPECIFICATIONS
 
