@@ -2,6 +2,7 @@
 
 const Client = require('bitcoin-core')
 const express = require('express')
+const cors = require('cors')
 const https = require('https')
 const pem = require('pem')
 const bodyParser = require('body-parser')
@@ -79,6 +80,7 @@ function initServer() {
           requestCert: false,
           rejectUnauthorized: false,
         }
+        app.use(cors())
         app.use(bodyParser.json())
         app.use(bodyParser.urlencoded({
           extended: true,
@@ -97,6 +99,7 @@ function initServer() {
         requestCert: false,
         rejectUnauthorized: false,
       }
+      app.use(cors())
       app.use(bodyParser.json())
       app.use(bodyParser.urlencoded({
         extended: true,
