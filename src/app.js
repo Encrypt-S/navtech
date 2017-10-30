@@ -80,7 +80,7 @@ function initServer() {
           requestCert: false,
           rejectUnauthorized: false,
         }
-        app.use(cors())
+        app.use(cors({origin: '*'}))
         app.use(bodyParser.json())
         app.use(bodyParser.urlencoded({
           extended: true,
@@ -99,7 +99,7 @@ function initServer() {
         requestCert: false,
         rejectUnauthorized: false,
       }
-      app.use(cors())
+      app.use(cors({origin: '*'}))
       app.use(bodyParser.json())
       app.use(bodyParser.urlencoded({
         extended: true,
