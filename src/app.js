@@ -75,11 +75,11 @@ function initServer() {
           return
         }
         const sslOptions = {
-          key: fs.readFileSync(settings.ssl.key),
-          cert: fs.readFileSync(settings.ssl.crt),
+          key: fs.readFileSync(settings.ssl.key).toString(),
+          cert: fs.readFileSync(settings.ssl.crt).toString(),
         }
 
-        if (settings.ssl.ca) sslOptions.ca = fs.readFileSync(settings.ssl.ca)
+        if (settings.ssl.ca) sslOptions.ca = fs.readFileSync(settings.ssl.ca).toString()
 
         Logger.writeLog('DEBUG_001', 'ssl options', sslOptions)
 
