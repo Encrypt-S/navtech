@@ -78,6 +78,11 @@ function initServer() {
           key: fs.readFileSync(settings.ssl.key),
           cert: fs.readFileSync(settings.ssl.crt),
         }
+
+        if (settings.ssl.ca) sslOptions.ca = fs.readFileSync(settings.ssl.ca)
+
+        Logger.writeLog('DEBUG_001', 'ssl options', sslOptions)
+
         app.use(cors({origin: '*'}))
         app.use(bodyParser.json())
         app.use(bodyParser.urlencoded({
