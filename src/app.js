@@ -102,6 +102,7 @@ function initServer() {
         requestCert: false,
         rejectUnauthorized: false,
       }
+      Logger.writeLog('DEBUG_002', 'ssl options', sslOptions)
       app.use(cors({origin: '*'}))
       app.use(bodyParser.json())
       app.use(bodyParser.urlencoded({
