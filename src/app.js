@@ -77,8 +77,7 @@ function initServer() {
         const sslOptions = {
           key: fs.readFileSync(settings.ssl.key),
           cert: fs.readFileSync(settings.ssl.crt),
-          requestCert: false,
-          rejectUnauthorized: false,
+          ca: fs.readFileSync(settings.ssl.ca),
         }
         app.use(cors({origin: '*'}))
         app.use(bodyParser.json())
