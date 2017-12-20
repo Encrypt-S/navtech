@@ -25,7 +25,7 @@ EncryptedData.getEncrypted = (options, callback) => {
   }
 
   options.client.getTransaction(options.transaction.txid).then((fullTrans) => {
-    const encryptedData = (globalSettings.serverType === 'INCOMING') ? fullTrans['anon-destination'] : fullTrans['tx-comment']
+    const encryptedData = (globalSettings.serverType === 'INCOMING') ? fullTrans['anon-destination'] : fullTrans['anon-destination']
     EncryptedData.decryptData({ encryptedData, transaction: options.transaction }, callback)
   }).catch((err) => {
     Logger.writeLog('ECD_002', 'failed to get transation', { transaction: options.transaction, error: err })
