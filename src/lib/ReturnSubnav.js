@@ -18,6 +18,7 @@ ReturnSubnav.run = (options, callback) => {
     subClient: options.subClient,
     transactions: options.transactions,
   }
+  console.log('options', options)
 
   ReturnSubnav.runtime.remainingTransactions = options.transactions
   ReturnSubnav.sendToIncoming()
