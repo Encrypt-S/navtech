@@ -12,7 +12,7 @@ const AddressGenerator = require('./lib/AddressGenerator.js')
 const EncryptionKeys = require('./lib/EncryptionKeys.js')
 const Logger = require('./lib/Logger.js')
 const NavCoin = require('./lib/NavCoin.js')
-
+const EncryptedData = require('./lib/EncryptedData.js')
 const privateSettings = require('./settings/private.settings')
 const recoverySettings = require('./settings/recovery.settings')
 
@@ -84,7 +84,22 @@ function processFiltered(success, data) {
     return
   }
 
+  runtime.currentPending = data.currentPending
+
+  getTxData()
+
+}
+
+function getTxData() {
+  EncryptedData.getEncrypted({
+    transaction: runtime.currentPending[0],
+    client: subClient,
+  }, checkDecrypted)
+}
+
+function checkDecrypted(success, data) {
   console.log(data)
+  return
 }
 
 function getNavTransactions() {
