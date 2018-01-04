@@ -9,6 +9,7 @@
     "start": "NODE_ENV=production babel-node src/app.js",
     "setup": "node src/setup.js",
     "loader": "node src/loader.js",
+    "recovery": "node src/recovery.js",
     "mocha": "./node_modules/.bin/mocha",
     "coverage": "istanbul cover ./node_modules/.bin/_mocha"
   },
