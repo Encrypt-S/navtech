@@ -88,6 +88,11 @@ function processFiltered(success, data) {
     return
   }
 
+  if (!data.currentPending || !data.currentPending.length < 1) {
+    console.log('FINISHED: No transactions for recovery')
+    return
+  }
+
   runtime.currentPending = data.currentPending
 
   ReturnSubnav.run({
