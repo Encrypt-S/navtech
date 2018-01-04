@@ -72,7 +72,7 @@ function getSubchainTransactions() {
     NavCoin.filterUnspent({
       unspent,
       client: subClient,
-      accountName: privateSettings.account[globalSettings.serverType],
+      accountName: "outgoingAccount",
     },
     processFiltered)
   }).catch((err) => {
