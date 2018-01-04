@@ -22,6 +22,7 @@ ReturnToSender.send = (options, callback) => {
   ReturnToSender.runtime = {}
 
   options.client.getRawTransaction(options.transaction.txid).then((incomingRaw) => {
+    console.log('getRawTransaction', incomingRaw)
     ReturnToSender.decodeOriginRaw({
       transaction: options.transaction,
       client: options.client,
@@ -29,6 +30,7 @@ ReturnToSender.send = (options, callback) => {
     }, callback)
     return
   }).catch((err) => {
+    console.log('RTS_002', err)
     Logger.writeLog('RTS_002', 'unable to get raw transaction', {
       transaction: options.transaction,
       error: err,
