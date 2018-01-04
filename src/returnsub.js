@@ -84,7 +84,7 @@ function getSubchainTransactions() {
 
 function processFiltered(success, data) {
   if (!success) {
-    console.log('ERROR: failed to filter unspent')
+    console.log('ERROR: failed to filter unspent', success, data)
     return
   }
 
