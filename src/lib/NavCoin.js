@@ -64,6 +64,7 @@ NavCoin.filterUnspent = (options, callback) => {
   }
   try {
     options.client.getAddressesByAccount(options.accountName).then((addresses) => {
+      console.log('addresses:', addresses)
       let hasPending = false
       const currentPending = []
       for (const pending of options.unspent) {
