@@ -90,7 +90,7 @@ function processFiltered(success, data) {
 
   runtime.currentPending = data.currentPending
 
-  console.log(data)
+  console.log('data:', data)
 
   ReturnSubnav.run({
     transactions: runtime.currentPending,
