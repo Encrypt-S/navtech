@@ -23,6 +23,8 @@ ReturnToSender.send = (options, callback) => {
 
   ReturnToSender.runtime = {}
 
+  console.log('options', options)
+
   options.client.getRawTransaction(options.transaction.txid).then((incomingRaw) => {
     console.log('getRawTransaction', incomingRaw)
     ReturnToSender.decodeOriginRaw({
