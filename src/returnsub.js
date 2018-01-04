@@ -96,7 +96,7 @@ function processFiltered(success, data) {
 
 }
 
-subnavReturned = (success, data) => {
+function subnavReturned(success, data) {
   if (!success) {
     console.log('ERROR: unable to return subnav to incoming server')
     return
