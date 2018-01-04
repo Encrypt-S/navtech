@@ -92,6 +92,8 @@ function processFiltered(success, data) {
   }
 
   runtime.currentPending = data.currentPending
+  console.log(runtime.currentPending)
+
   getTxData()
 
 }
