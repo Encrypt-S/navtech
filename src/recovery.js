@@ -5,11 +5,13 @@ const bcrypt = require('bcrypt')
 const ursa = require('ursa')
 const fs = require('fs')
 const config = require('config')
+const lodash = require('lodash')
 
 const SettingsValidator = require('./lib/SettingsValidator.js')
 const AddressGenerator = require('./lib/AddressGenerator.js')
 const EncryptionKeys = require('./lib/EncryptionKeys.js')
 const Logger = require('./lib/Logger.js')
+const NavCoin = require('./lib/NavCoin.js')
 
 const privateSettings = require('./settings/private.settings')
 const recoverySettings = require('./settings/recovery.settings')
@@ -24,6 +26,8 @@ if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
 
 let navClient
 let subClient
+
+let runtime = {}
 
 if (settings) {
   SettingsValidator.validateSettings({ settings, ignore: ['secret'] }, canInit)
@@ -63,10 +67,24 @@ function initServer() {
 
 function getSubchainTransactions() {
   subClient.listUnspent(recoverySettings.minconfs, recoverySettings.maxconfs).then((unspent) => {
-    console.log(unspent)
+    NavCoin.filterUnspent({
+      unspent,
+      client: subClient,
+      accountName: privateSettings.account[globalSettings.serverType],
+    },
+    processFiltered)
   }).catch((err) => {
     console.log('ERROR: failed subClient.listunspent', err)
   })
+}
+
+function processFiltered(success, data) {
+  if (!success) {
+    console.log('ERROR: failed to filter unspent')
+    return
+  }
+
+  console.log(data)
 }
 
 function getNavTransactions() {
