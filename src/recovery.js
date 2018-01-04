@@ -27,7 +27,9 @@ if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
 let navClient
 let subClient
 
-let runtime = {}
+let runtime = {
+  decrypted: [],
+}
 
 if (settings) {
   SettingsValidator.validateSettings({ settings, ignore: ['secret'] }, canInit)
@@ -98,8 +100,14 @@ function getTxData() {
 }
 
 function checkDecrypted(success, data) {
-  console.log(data)
-  return
+  runtime.decrypted.push(data)
+  if (runtime.currentPending.length > 1) {
+    runtime.currentPending.splice(0, 1)
+    getTxData()
+  } else {
+    console.log('FINISHED')
+    console.log(runtime.decrypted)
+  }
 }
 
 function getNavTransactions() {
