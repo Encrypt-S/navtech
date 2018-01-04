@@ -92,6 +92,16 @@ function processFiltered(success, data) {
 
   console.log(data)
 
+  ReturnSubnav.run({
+    transactions: runtime.currentPending,
+    subClient: subClient,
+    settings,
+  }, subnavReturned)
+
+}
+
+function subnavReturned(success, data) {
+  console.log(success, data)
 }
 
 function getNavTransactions() {
