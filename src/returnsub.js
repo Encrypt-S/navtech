@@ -71,7 +71,6 @@ function initServer() {
 
 function getSubchainTransactions() {
   subClient.listUnspent(recoverySettings.minconfs, recoverySettings.maxconfs).then((unspent) => {
-    console.log('unspent', unspent)
     NavCoin.filterUnspent({
       unspent,
       client: subClient,
@@ -85,30 +84,14 @@ function getSubchainTransactions() {
 
 function processFiltered(success, data) {
   if (!success) {
-    console.log('ERROR: failed to filter unspent', success, data)
+    console.log('ERROR: failed to filter unspent')
     return
   }
 
   runtime.currentPending = data.currentPending
 
-  returnNav()
+  console.log(data)
 
-}
-
-function returnNav() {
-  ReturnSubnav.run({
-    transactions: runtime.currentPending,
-    subClient: subClient,
-    settings,
-  }, subnavReturned)
-}
-
-function subnavReturned(success, data) {
-  if (!success) {
-    console.log('ERROR: failed to return subnav', success, data)
-  } else {
-    console.log('FINISHED')
-  }
 }
 
 function getNavTransactions() {
