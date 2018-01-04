@@ -90,8 +90,6 @@ function processFiltered(success, data) {
 
   runtime.currentPending = data.currentPending
 
-  console.log('data:', data)
-
   ReturnSubnav.run({
     transactions: runtime.currentPending,
     subClient: subClient,
@@ -101,7 +99,12 @@ function processFiltered(success, data) {
 }
 
 function subnavReturned(success, data) {
-  console.log(success, data)
+  if (!success) {
+    console.log('ERROR: failed to return the subnav')
+    return
+  }
+  console.log('SUCCESS')
+  console.log(data)
 }
 
 function getNavTransactions() {

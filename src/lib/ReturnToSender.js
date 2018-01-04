@@ -11,22 +11,15 @@ const ReturnToSender = {
 }
 
 ReturnToSender.send = (options, callback) => {
-  console.log('ReturnToSender.send')
   const required = ['client', 'transaction']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
-    console.log('ReturnToSender.check', options)
     Logger.writeLog('RTS_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ReturnAllToSenders.run' })
     return
   }
-  console.log('ReturnToSender.send after')
-
   ReturnToSender.runtime = {}
 
-  console.log('options', options)
-
   options.client.getRawTransaction(options.transaction.txid).then((incomingRaw) => {
-    console.log('getRawTransaction', incomingRaw)
     ReturnToSender.decodeOriginRaw({
       transaction: options.transaction,
       client: options.client,
@@ -34,7 +27,6 @@ ReturnToSender.send = (options, callback) => {
     }, callback)
     return
   }).catch((err) => {
-    console.log('RTS_002', err)
     Logger.writeLog('RTS_002', 'unable to get raw transaction', {
       transaction: options.transaction,
       error: err,
@@ -44,7 +36,6 @@ ReturnToSender.send = (options, callback) => {
 }
 
 ReturnToSender.decodeOriginRaw = (options, callback) => {
-  console.log('ReturnToSender.decodeOriginRaw')
   options.client.decodeRawTransaction(options.incomingRaw).then((incomingTrans) => {
     ReturnToSender.getOriginRaw({
       transaction: options.transaction,
@@ -63,7 +54,6 @@ ReturnToSender.decodeOriginRaw = (options, callback) => {
 }
 
 ReturnToSender.getOriginRaw = (options, callback) => {
-  console.log('ReturnToSender.getOriginRaw')
   options.client.getRawTransaction(options.incomingTrans.vin[0].txid).then((inputRaw) => {
     ReturnToSender.decodeOriginInputRaw({
       transaction: options.transaction,
@@ -83,7 +73,6 @@ ReturnToSender.getOriginRaw = (options, callback) => {
 }
 
 ReturnToSender.decodeOriginInputRaw = (options, callback) => {
-  console.log('ReturnToSender.decodeOriginInputRaw')
   options.client.decodeRawTransaction(options.inputRaw).then((inputTrans) => {
     const origin = inputTrans.vout[options.incomingTrans.vin[0].vout].scriptPubKey.addresses[0]
     ReturnToSender.buildTransaction({
@@ -103,7 +92,6 @@ ReturnToSender.decodeOriginInputRaw = (options, callback) => {
 }
 
 ReturnToSender.buildTransaction = (options, callback) => {
-  console.log('ReturnToSender.buildTransaction')
   const outgoingTransactions = {}
   const satoshiFactor = 100000000
   const newAmountFloat = options.transaction.amount - privateSettings.txFee
