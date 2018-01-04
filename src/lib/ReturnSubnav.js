@@ -24,6 +24,7 @@ ReturnSubnav.run = (options, callback) => {
 }
 
 ReturnSubnav.sendToIncoming = () => {
+  console.log('ReturnSubnav.sendToIncoming')
   if (ReturnSubnav.runtime.remainingTransactions.constructor !== Array || ReturnSubnav.runtime.remainingTransactions.length < 1) {
     ReturnSubnav.runtime.callback(true, { message: 'all subnav returned to incoming server' })
     return
@@ -35,6 +36,7 @@ ReturnSubnav.sendToIncoming = () => {
 }
 
 ReturnSubnav.sent = (success, data) => {
+  console.log('ReturnSubnav.sent')
   if (!success || !data || !data.rawOutcome) {
     Logger.writeLog('RSN_002', 'unable to return subnav to incoming server', {
       remaining: ReturnSubnav.runtime.remainingTransactions, success, data,

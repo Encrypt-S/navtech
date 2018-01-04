@@ -15,6 +15,7 @@ if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
 const SendRawTransaction = {}
 
 SendRawTransaction.createRaw = (options, callback) => {
+  console.log('SendRawTransaction.createRaw')
   const required = ['spentTransactions', 'outgoingTransactions', 'client']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('RAW_001', 'invalid options', { options, required })

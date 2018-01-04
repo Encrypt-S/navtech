@@ -11,6 +11,7 @@ const ReturnToSender = {
 }
 
 ReturnToSender.send = (options, callback) => {
+  console.log('ReturnToSender.send')
   const required = ['client', 'transaction']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
     Logger.writeLog('RTS_001', 'invalid options', { options, required })
