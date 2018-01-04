@@ -88,7 +88,7 @@ function processFiltered(success, data) {
     return
   }
 
-  if (!data.currentPending || !data.currentPending.length < 1) {
+  if (!data.currentPending) {
     console.log('FINISHED: No transactions for recovery')
     return
   }
