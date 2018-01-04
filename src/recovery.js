@@ -69,7 +69,6 @@ function initServer() {
 
 function getSubchainTransactions() {
   subClient.listUnspent(recoverySettings.minconfs, recoverySettings.maxconfs).then((unspent) => {
-    console.log('unspent', unspent)
     NavCoin.filterUnspent({
       unspent,
       client: subClient,
