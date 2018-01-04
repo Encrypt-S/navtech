@@ -14,10 +14,12 @@ ReturnToSender.send = (options, callback) => {
   console.log('ReturnToSender.send')
   const required = ['client', 'transaction']
   if (lodash.intersection(Object.keys(options), required).length !== required.length) {
+    console.log('ReturnToSender.check', options)
     Logger.writeLog('RTS_001', 'invalid options', { options, required })
     callback(false, { message: 'invalid options provided to ReturnAllToSenders.run' })
     return
   }
+  console.log('ReturnToSender.send after')
 
   ReturnToSender.runtime = {}
 
