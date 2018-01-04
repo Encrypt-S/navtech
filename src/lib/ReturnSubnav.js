@@ -32,7 +32,7 @@ ReturnSubnav.sendToIncoming = () => {
   }
   ReturnToSender.send({
     client: ReturnSubnav.runtime.subClient,
-    transaction: ReturnSubnav.runtime.remainingTransactions[0].transaction,
+    transaction: ReturnSubnav.runtime.remainingTransactions[0].transaction || ReturnSubnav.runtime.remainingTransactions[0],
   }, ReturnSubnav.sent)
 }
 
