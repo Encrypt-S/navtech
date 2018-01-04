@@ -12,7 +12,7 @@ const AddressGenerator = require('./lib/AddressGenerator.js')
 const EncryptionKeys = require('./lib/EncryptionKeys.js')
 const Logger = require('./lib/Logger.js')
 const NavCoin = require('./lib/NavCoin.js')
-const ReturnSubnav = require('./lib/ReturnSubnav.js')
+const EncryptedData = require('./lib/EncryptedData.js')
 const privateSettings = require('./settings/private.settings')
 const recoverySettings = require('./settings/recovery.settings')
 
@@ -88,21 +88,26 @@ function processFiltered(success, data) {
 
   runtime.currentPending = data.currentPending
 
-  ReturnSubnav.run({
-    transactions: data.currentPending,
-    subClient: subClient,
-    settings,
-  }, subnavReturned)
+  getTxData()
 
 }
 
-function subnavReturned(success, data) {
-  if (!success) {
-    console.log('ERROR: unable to return subnav to incoming server')
-    return
+function getTxData() {
+  EncryptedData.getEncrypted({
+    transaction: runtime.currentPending[0],
+    client: subClient,
+  }, checkDecrypted)
+}
+
+function checkDecrypted(success, data) {
+  runtime.decrypted.push(data)
+  if (runtime.currentPending.length > 1) {
+    runtime.currentPending.splice(0, 1)
+    getTxData()
+  } else {
+    console.log('FINISHED')
+    console.log(runtime.decrypted)
   }
-  console.log('FINISHED', data)
-  return
 }
 
 function getNavTransactions() {
