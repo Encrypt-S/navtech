@@ -62,8 +62,7 @@ function initServer() {
 }
 
 function getSubchainTransactions() {
-  console.log(subClient)
-  subClient.listunspent(recoverySettings.minconfs, recoverySettings.maxconfs).then((unspent) => {
+  subClient.listUnspent(recoverySettings.minconfs, recoverySettings.maxconfs).then((unspent) => {
     console.log(unspent)
   }).catch((err) => {
     console.log('ERROR: failed subClient.listunspent', err)
