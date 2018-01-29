@@ -31,7 +31,7 @@
   "minAmount": {
     "required": true,
     "type": "INT",
-    "min": 1
+    "min": 0.1
   },
   "maxAmount": {
     "required": true,
