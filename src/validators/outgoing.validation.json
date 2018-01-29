@@ -26,7 +26,7 @@
   "scriptInterval": {
     "required": true,
     "type": "INT",
-    "min": 120000
+    "min": 30000
   },
   "minAmount": {
     "required": true,
