@@ -1,18 +1,10 @@
 'use strict'
 
 const Client = require('bitcoin-core')
-const bcrypt = require('bcrypt')
-const ursa = require('ursa')
-const fs = require('fs')
 const config = require('config')
-const lodash = require('lodash')
 
 const SettingsValidator = require('./lib/SettingsValidator.js')
-const AddressGenerator = require('./lib/AddressGenerator.js')
-const EncryptionKeys = require('./lib/EncryptionKeys.js')
-const Logger = require('./lib/Logger.js')
 const NavCoin = require('./lib/NavCoin.js')
-const EncryptedData = require('./lib/EncryptedData.js')
 const ReturnSubnav = require('./lib/ReturnSubnav.js')
 
 const privateSettings = require('./settings/private.settings')
@@ -26,10 +18,9 @@ if (globalSettings.serverType === 'OUTGOING') settings = config.get('OUTGOING')
 
 // -------------- INIT SETTINGS AND DAEMONS ------------------------------------
 
-let navClient
 let subClient
 
-let runtime = {
+const runtime = {
   decrypted: [],
 }
 
@@ -48,25 +39,17 @@ function canInit(settingsValid) {
 }
 
 function initServer() {
-  navClient = new Client({
-    username: settings.navCoin.user,
-    password: settings.navCoin.pass,
-    port: settings.navCoin.port,
-    host: settings.navCoin.host,
-  })
-
   subClient = new Client({
     username: settings.subChain.user,
     password: settings.subChain.pass,
     port: settings.subChain.port,
     host: settings.subChain.host,
   })
-  if (recoverySettings.type === "SUB") {
+  if (recoverySettings.type === 'SUB') {
     getSubchainTransactions()
   } else {
     getNavTransactions()
   }
-
 }
 
 function getSubchainTransactions() {
@@ -97,10 +80,9 @@ function processFiltered(success, data) {
 
   ReturnSubnav.run({
     transactions: runtime.currentPending,
-    subClient: subClient,
+    subClient,
     settings,
   }, subnavReturned)
-
 }
 
 function subnavReturned(success, data) {
@@ -113,5 +95,5 @@ function subnavReturned(success, data) {
 }
 
 function getNavTransactions() {
-  console.log('type NAV not used yet');
+  console.log('type NAV not used yet')
 }
