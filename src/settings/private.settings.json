@@ -29,17 +29,17 @@
   "maxEncryptionAttempts": 10,
   "encryptionStrength": {
     "INCOMING": 2048,
-    "OUTGOING": 1024
+    "OUTGOING": 2048
   },
   "encryptionOutput": {
     "INCOMING": 344,
-    "OUTGOING": 172
+    "OUTGOING": 344
   },
   "subCoinsPerTx": 1,
   "subChainTxFee": 0.0001,
   "minConfs": 1,
-  "maxConfs": 60,
-  "maxQueue": 120,
+  "maxConfs": 40,
+  "maxQueue": 40,
   "blockThreshold": {
     "checking": 5,
     "processing": 3
