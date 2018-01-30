@@ -41,7 +41,7 @@
   "navPoolAmount": {
     "required": true,
     "type": "INT",
-    "min": 50000
+    "min": 1000
   },
   "txFeePayoutMin": {
     "required": true,
