@@ -22,7 +22,7 @@ PayoutFee.run = (options, callback) => {
 }
 
 PayoutFee.send = () => {
-  PayoutFee.runtime.navClient.listUnspent(20).then((unspent) => {
+  PayoutFee.runtime.navClient.listUnspent(200).then((unspent) => {
     let navBalanceSat = 0
     const satoshiFactor = 100000000
     for (const pending of unspent) {
