@@ -2,6 +2,7 @@
 
 const Client = require('bitcoin-core')
 const express = require('express')
+const cors = require('cors')
 const https = require('https')
 const pem = require('pem')
 const bodyParser = require('body-parser')
@@ -74,11 +75,13 @@ function initServer() {
           return
         }
         const sslOptions = {
-          key: fs.readFileSync(settings.ssl.key),
-          cert: fs.readFileSync(settings.ssl.crt),
-          requestCert: false,
-          rejectUnauthorized: false,
+          key: fs.readFileSync(settings.ssl.key).toString(),
+          cert: fs.readFileSync(settings.ssl.crt).toString(),
         }
+
+        Logger.writeLog('DEBUG_001', 'ssl options', sslOptions)
+
+        app.use(cors({origin: '*'}))
         app.use(bodyParser.json())
         app.use(bodyParser.urlencoded({
           extended: true,
@@ -97,6 +100,8 @@ function initServer() {
         requestCert: false,
         rejectUnauthorized: false,
       }
+      Logger.writeLog('DEBUG_002', 'ssl options', sslOptions)
+      app.use(cors({origin: '*'}))
       app.use(bodyParser.json())
       app.use(bodyParser.urlencoded({
         extended: true,

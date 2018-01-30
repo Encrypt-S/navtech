@@ -30,8 +30,8 @@
   },
   "minAmount": {
     "required": true,
-    "type": "INT",
-    "min": 1
+    "type": "FLOAT",
+    "min": 0.1
   },
   "maxAmount": {
     "required": true,
