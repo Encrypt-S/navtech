@@ -373,3 +373,8 @@ This should give you ample information to be able to gracefully shut the server 
 ``` sh
 forever stop 0
 ```
+
+
+License
+---------------------
+Distributed under the [MIT software license](http://www.opensource.org/licenses/mit-license.php).
