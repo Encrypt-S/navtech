@@ -1,4 +1,4 @@
-![alt text](https://raw.githubusercontent.com/navcoindev/navcoin-media/master/logo/logo-extended.png "Logo text 2")
+![NavCoin](./img/logo-extended.png)
 
 # NAVTECH
 
