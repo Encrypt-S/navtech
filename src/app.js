@@ -3,6 +3,7 @@
 const Client = require('bitcoin-core')
 const express = require('express')
 const cors = require('cors')
+const dnsSync = require('dns-sync');
 const https = require('https')
 const pem = require('pem')
 const bodyParser = require('body-parser')
@@ -293,7 +294,8 @@ const apiInit = () => {
     const remoteIpAddress = NavtechApi.runtime.req.connection.remoteAddress || NavtechApi.runtime.req.socket.remoteAddress
     let authorized = false
     for (let i = 0; i < options.allowedIps.length; i++) {
-      if (remoteIpAddress === options.allowedIps[i].ipAddress || remoteIpAddress === '::ffff:' + options.allowedIps[i].ipAddress) {
+      if (remoteIpAddress === options.allowedIps[i].ipAddress || remoteIpAddress === '::ffff:' + options.allowedIps[i].ipAddress ||
+	remoteIpAddress === dnsSync.resolve(options.allowedIps[i].host)) {
         authorized = true
       }
     }
