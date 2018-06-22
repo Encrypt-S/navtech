@@ -76,6 +76,10 @@
       "required": true,
       "type": "IP_ADDRESS"
     },
+    "host": {
+      "required": false,
+      "type": "DOMAIN"
+    },
     "port": {
       "required": true,
       "type": "VALUE",
@@ -100,6 +104,10 @@
     "ip": {
       "required": true,
       "type": "IP_ADDRESS"
+    },
+    "host": {
+      "required": false,
+      "type": "DOMAIN"
     },
     "port": {
       "required": true,
