@@ -29,14 +29,14 @@ OutgoingServer.init = () => {
     username: settings.navCoin.user,
     password: settings.navCoin.pass,
     port: settings.navCoin.port,
-    host: settings.navCoin.host,
+    host: settings.navCoin.host || settings.navCoin.ip,
   })
 
   OutgoingServer.subClient = new Client({
     username: settings.subChain.user,
     password: settings.subChain.pass,
     port: settings.subChain.port,
-    host: settings.subChain.host,
+    host: settings.subChain.host || settings.subChain.ip,
   })
 
   Logger.writeLog('OUT_000', 'server starting')
