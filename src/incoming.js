@@ -92,7 +92,7 @@ IncomingServer.holdingProcessed = (success, data) => {
 }
 
 IncomingServer.outgoingSelected = (success, data) => {
-  if (!success) {
+  if (!success && (!data || !data.returnAllToSenders)) {
     Logger.writeLog('INC_005', 'failed to find outgoing server', { success, data }, true)
     IncomingServer.processing = false
     return
